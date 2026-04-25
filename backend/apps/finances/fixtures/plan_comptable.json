@@ -1,0 +1,56 @@
+[
+    {
+        "model": "finances.comptecomptable",
+        "pk": 1,
+        "fields": {
+            "code": "101",
+            "nom": "Caisse Centrale",
+            "type": "ACTIF"
+        }
+    },
+    {
+        "model": "finances.comptecomptable",
+        "pk": 2,
+        "fields": {
+            "code": "401",
+            "nom": "Clients / Créances",
+            "type": "ACTIF"
+        }
+    },
+    {
+        "model": "finances.comptecomptable",
+        "pk": 3,
+        "fields": {
+            "code": "601",
+            "nom": "Achats de Marchandises",
+            "type": "CHARGE"
+        }
+    },
+    {
+        "model": "finances.comptecomptable",
+        "pk": 4,
+        "fields": {
+            "code": "701",
+            "nom": "Ventes de Marchandises",
+            "type": "PRODUIT"
+        }
+    },
+    {
+        "model": "finances.comptecomptable",
+        "pk": 5,
+        "fields": {
+            "code": "602",
+            "nom": "Charges et Dépenses Diverses",
+            "type": "CHARGE"
+        }
+    },
+    {
+        "model": "finances.comptecomptable",
+        "pk": 6,
+        "fields": {
+            "code": "201",
+            "nom": "Banque / Compte Pro",
+            "type": "ACTIF"
+        }
+    }
+]

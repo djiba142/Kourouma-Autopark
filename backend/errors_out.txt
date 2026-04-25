@@ -1,0 +1,1745 @@
+﻿venv\Scripts\python.exe : 
+Creating test database for 
+alias 'default'...
+Au caractère Ligne:1 : 1
++ venv\Scripts\python.exe 
+manage.py test commandes 
+finances stock --noi ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
+    + CategoryInfo         
+     : NotSpecified: (Cre  
+  ating test d...as 'def   
+ ault'...:String) [], R    
+emoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+
+FFFFEEEE
+===========================
+===========================
+================
+ERROR: test_depense_avec_ca
+tegorie (finances.tests.Dep
+enseTestCase.test_depense_a
+vec_categorie)
+---------------------------
+---------------------------
+----------------
+Traceback (most recent 
+call last):
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\backends\
+utils.py", line 105, in 
+_execute
+    return 
+self.cursor.execute(sql, 
+params)
+           ~~~~~~~~~~~~~~~~
+~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedCo
+lumn: ERREUR:  la colonne 
+┬½ budget_mensuel ┬╗ de la 
+relation ┬½ 
+finances_categoriedepense 
+┬╗ n'existe pas
+LINE 1: INSERT INTO "financ
+es_categoriedepense" 
+("nom", "budget_mens...
+                           
+                           
+  ^
+
+
+The above exception was 
+the direct cause of the 
+following exception:
+
+Traceback (most recent 
+call last):
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\apps\finances\t
+ests.py", line 13, in setUp
+    
+self.categorie_transport = 
+CategorieDepense.objects.cr
+eate(nom="Transport")
+                           
+    ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\ma
+nager.py", line 87, in 
+manager_method
+    return getattr(self.get
+_queryset(), name)(*args, 
+**kwargs)
+           ~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~^^^^^^^^^
+^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\qu
+ery.py", line 669, in 
+create
+    obj.save(force_insert=T
+rue, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\ba
+se.py", line 874, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=updat
+e_fields,
+        ^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\ba
+se.py", line 966, in 
+save_base
+    updated = 
+self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\ba
+se.py", line 1169, in 
+_save_table
+    results = 
+self._do_insert(
+        cls._base_manager, 
+using, insert_fields, 
+returning_fields, raw
+    )
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\ba
+se.py", line 1220, in 
+_do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\ma
+nager.py", line 87, in 
+manager_method
+    return getattr(self.get
+_queryset(), name)(*args, 
+**kwargs)
+           ~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~^^^^^^^^^
+^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\qu
+ery.py", line 1918, in 
+_insert
+    return query.get_compil
+er(using=using).execute_sql
+(returning_fields)
+           ~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\sq
+l\compiler.py", line 1925, 
+in execute_sql
+    cursor.execute(sql, 
+params)
+    
+~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\backends\
+utils.py", line 79, in 
+execute
+    return self._execute_wi
+th_wrappers(
+           ~~~~~~~~~~~~~~~~
+~~~~~~~~~~~^
+        sql, params, 
+many=False, 
+executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^
+    )
+    ^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\backends\
+utils.py", line 92, in 
+_execute_with_wrappers
+    return executor(sql, 
+params, many, context)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\backends\
+utils.py", line 100, in 
+_execute
+    with self.db.wrap_datab
+ase_errors:
+         ^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\utils.py"
+, line 94, in __exit__
+    raise dj_exc_value.with
+_traceback(traceback) from 
+exc_value
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\backends\
+utils.py", line 105, in 
+_execute
+    return 
+self.cursor.execute(sql, 
+params)
+           ~~~~~~~~~~~~~~~~
+~~~^^^^^^^^^^^^^
+django.db.utils.Programming
+Error: ERREUR:  la colonne 
+┬½ budget_mensuel ┬╗ de la 
+relation ┬½ 
+finances_categoriedepense 
+┬╗ n'existe pas
+LINE 1: INSERT INTO "financ
+es_categoriedepense" 
+("nom", "budget_mens...
+                           
+                           
+  ^
+
+
+===========================
+===========================
+================
+ERROR: test_depense_sans_ca
+tegorie_echoue (finances.te
+sts.DepenseTestCase.test_de
+pense_sans_categorie_echoue
+)
+---------------------------
+---------------------------
+----------------
+Traceback (most recent 
+call last):
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\backends\
+utils.py", line 105, in 
+_execute
+    return 
+self.cursor.execute(sql, 
+params)
+           ~~~~~~~~~~~~~~~~
+~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedCo
+lumn: ERREUR:  la colonne 
+┬½ budget_mensuel ┬╗ de la 
+relation ┬½ 
+finances_categoriedepense 
+┬╗ n'existe pas
+LINE 1: INSERT INTO "financ
+es_categoriedepense" 
+("nom", "budget_mens...
+                           
+                           
+  ^
+
+
+The above exception was 
+the direct cause of the 
+following exception:
+
+Traceback (most recent 
+call last):
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\apps\finances\t
+ests.py", line 13, in setUp
+    
+self.categorie_transport = 
+CategorieDepense.objects.cr
+eate(nom="Transport")
+                           
+    ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\ma
+nager.py", line 87, in 
+manager_method
+    return getattr(self.get
+_queryset(), name)(*args, 
+**kwargs)
+           ~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~^^^^^^^^^
+^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\qu
+ery.py", line 669, in 
+create
+    obj.save(force_insert=T
+rue, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\ba
+se.py", line 874, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=updat
+e_fields,
+        ^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\ba
+se.py", line 966, in 
+save_base
+    updated = 
+self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\ba
+se.py", line 1169, in 
+_save_table
+    results = 
+self._do_insert(
+        cls._base_manager, 
+using, insert_fields, 
+returning_fields, raw
+    )
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\ba
+se.py", line 1220, in 
+_do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\ma
+nager.py", line 87, in 
+manager_method
+    return getattr(self.get
+_queryset(), name)(*args, 
+**kwargs)
+           ~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~^^^^^^^^^
+^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\qu
+ery.py", line 1918, in 
+_insert
+    return query.get_compil
+er(using=using).execute_sql
+(returning_fields)
+           ~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\sq
+l\compiler.py", line 1925, 
+in execute_sql
+    cursor.execute(sql, 
+params)
+    
+~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\backends\
+utils.py", line 79, in 
+execute
+    return self._execute_wi
+th_wrappers(
+           ~~~~~~~~~~~~~~~~
+~~~~~~~~~~~^
+        sql, params, 
+many=False, 
+executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^
+    )
+    ^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\backends\
+utils.py", line 92, in 
+_execute_with_wrappers
+    return executor(sql, 
+params, many, context)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\backends\
+utils.py", line 100, in 
+_execute
+    with self.db.wrap_datab
+ase_errors:
+         ^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\utils.py"
+, line 94, in __exit__
+    raise dj_exc_value.with
+_traceback(traceback) from 
+exc_value
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\backends\
+utils.py", line 105, in 
+_execute
+    return 
+self.cursor.execute(sql, 
+params)
+           ~~~~~~~~~~~~~~~~
+~~~^^^^^^^^^^^^^
+django.db.utils.Programming
+Error: ERREUR:  la colonne 
+┬½ budget_mensuel ┬╗ de la 
+relation ┬½ 
+finances_categoriedepense 
+┬╗ n'existe pas
+LINE 1: INSERT INTO "financ
+es_categoriedepense" 
+("nom", "budget_mens...
+                           
+                           
+  ^
+
+
+===========================
+===========================
+================
+ERROR: 
+test_conversion_devise (fin
+ances.tests.DeviseTestCase.
+test_conversion_devise)
+---------------------------
+---------------------------
+----------------
+Traceback (most recent 
+call last):
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\backends\
+utils.py", line 105, in 
+_execute
+    return 
+self.cursor.execute(sql, 
+params)
+           ~~~~~~~~~~~~~~~~
+~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedCo
+lumn: ERREUR:  la colonne 
+┬½ budget_mensuel ┬╗ de la 
+relation ┬½ 
+finances_categoriedepense 
+┬╗ n'existe pas
+LINE 1: INSERT INTO "financ
+es_categoriedepense" 
+("nom", "budget_mens...
+                           
+                           
+  ^
+
+
+The above exception was 
+the direct cause of the 
+following exception:
+
+Traceback (most recent 
+call last):
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\apps\finances\t
+ests.py", line 41, in setUp
+    self.categorie_achats 
+= CategorieDepense.objects.
+create(nom="Achats 
+Internationaux")
+                           
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\ma
+nager.py", line 87, in 
+manager_method
+    return getattr(self.get
+_queryset(), name)(*args, 
+**kwargs)
+           ~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~^^^^^^^^^
+^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\qu
+ery.py", line 669, in 
+create
+    obj.save(force_insert=T
+rue, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\ba
+se.py", line 874, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=updat
+e_fields,
+        ^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\ba
+se.py", line 966, in 
+save_base
+    updated = 
+self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\ba
+se.py", line 1169, in 
+_save_table
+    results = 
+self._do_insert(
+        cls._base_manager, 
+using, insert_fields, 
+returning_fields, raw
+    )
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\ba
+se.py", line 1220, in 
+_do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\ma
+nager.py", line 87, in 
+manager_method
+    return getattr(self.get
+_queryset(), name)(*args, 
+**kwargs)
+           ~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~^^^^^^^^^
+^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\qu
+ery.py", line 1918, in 
+_insert
+    return query.get_compil
+er(using=using).execute_sql
+(returning_fields)
+           ~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\models\sq
+l\compiler.py", line 1925, 
+in execute_sql
+    cursor.execute(sql, 
+params)
+    
+~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\backends\
+utils.py", line 79, in 
+execute
+    return self._execute_wi
+th_wrappers(
+           ~~~~~~~~~~~~~~~~
+~~~~~~~~~~~^
+        sql, params, 
+many=False, 
+executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^
+    )
+    ^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\backends\
+utils.py", line 92, in 
+_execute_with_wrappers
+    return executor(sql, 
+params, many, context)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\backends\
+utils.py", line 100, in 
+_execute
+    with self.db.wrap_datab
+ase_errors:
+         ^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\utils.py"
+, line 94, in __exit__
+    raise dj_exc_value.with
+_traceback(traceback) from 
+exc_value
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\db\backends\
+utils.py", line 105, in 
+_execute
+    return 
+self.cursor.execute(sql, 
+params)
+           ~~~~~~~~~~~~~~~~
+~~~^^^^^^^^^^^^^
+django.db.utils.Programming
+Error: ERREUR:  la colonne 
+┬½ budget_mensuel ┬╗ de la 
+relation ┬½ 
+finances_categoriedepense 
+┬╗ n'existe pas
+LINE 1: INSERT INTO "financ
+es_categoriedepense" 
+("nom", "budget_mens...
+                           
+                           
+  ^
+
+
+===========================
+===========================
+================
+ERROR: test_flux_transfert 
+(stock.tests.TransfertTestC
+ase.test_flux_transfert)
+---------------------------
+---------------------------
+----------------
+Traceback (most recent 
+call last):
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\apps\stock\test
+s.py", line 42, in 
+test_flux_transfert
+    url_create = 
+reverse('transferts-list')
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\urls\base.py
+", line 98, in reverse
+    resolved_url = resolver
+._reverse_with_prefix(view,
+ prefix, *args, **kwargs)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\urls\resolve
+rs.py", line 842, in 
+_reverse_with_prefix
+    raise 
+NoReverseMatch(msg)
+django.urls.exceptions.NoRe
+verseMatch: Reverse for 
+'transferts-list' not 
+found. 'transferts-list' 
+is not a valid view 
+function or pattern name.
+
+===========================
+===========================
+================
+FAIL: test_create_commande 
+(commandes.tests.CommandeTe
+stCase.test_create_commande
+)
+---------------------------
+---------------------------
+----------------
+Traceback (most recent 
+call last):
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\apps\commandes\
+tests.py", line 50, in 
+test_create_commande
+    response = 
+self.client.post(url, 
+data, format='json')
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 283, in post
+    response = 
+super().post(
+        path, data=data, 
+format=format, 
+content_type=content_type, 
+**extra)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 197, in post
+    return 
+self.generic('POST', path, 
+data, content_type, 
+**extra)
+           ~~~~~~~~~~~~^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 221, in generic
+    return super().generic(
+           ~~~~~~~~~~~~~~~^
+        method, path, 
+data, content_type, 
+secure, **extra)
+        ^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\test\client.
+py", line 671, in generic
+    return 
+self.request(**r)
+           
+~~~~~~~~~~~~^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 273, in request
+    return 
+super().request(**kwargs)
+           
+~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 225, in request
+    request = 
+super().request(**kwargs)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\test\client.
+py", line 1087, in request
+    self.check_exception(re
+sponse)
+    ~~~~~~~~~~~~~~~~~~~~^^^
+^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\test\client.
+py", line 802, in 
+check_exception
+    raise exc_value
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\core\handler
+s\exception.py", line 55, 
+in inner
+    response = 
+get_response(request)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\core\handler
+s\base.py", line 198, in 
+_get_response
+    response = 
+wrapped_callback(request, 
+*callback_args, 
+**callback_kwargs)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\views\decora
+tors\csrf.py", line 65, in 
+_view_wrapper
+    return 
+view_func(request, *args, 
+**kwargs)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+sets.py", line 125, in view
+    return 
+self.dispatch(request, 
+*args, **kwargs)
+           ~~~~~~~~~~~~~^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+s.py", line 515, in 
+dispatch
+    response = 
+self.handle_exception(exc)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+s.py", line 475, in 
+handle_exception
+    self.raise_uncaught_exc
+eption(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+s.py", line 486, in 
+raise_uncaught_exception
+    raise exc
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+s.py", line 512, in 
+dispatch
+    response = 
+handler(request, *args, 
+**kwargs)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\mixi
+ns.py", line 19, in create
+    self.perform_create(ser
+ializer)
+    ~~~~~~~~~~~~~~~~~~~^^^^
+^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\AppData\Local\Programs
+\Python\Python313\Lib\conte
+xtlib.py", line 85, in 
+inner
+    return func(*args, 
+**kwds)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\apps\commandes\
+views.py", line 38, in 
+perform_create
+    instance = 
+serializer.save(
+        numero=numero,
+        
+cree_par=self.request.user,
+        statut=statut
+    )
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\seri
+alizers.py", line 210, in 
+save
+    self.instance = 
+self.create(validated_data)
+                    
+~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\seri
+alizers.py", line 997, in 
+create
+    raise_errors_on_nested_
+writes('create', self, 
+validated_data)
+    ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\seri
+alizers.py", line 861, in r
+aise_errors_on_nested_write
+s
+    assert not any(
+           ^^^^^^^^
+    ...<5 lines>...
+    ), (
+    ^
+AssertionError: The 
+`.create()` method does 
+not support writable 
+nested fields by default.
+Write an explicit 
+`.create()` method for 
+serializer `commandes.seria
+lizers.CommandeSerializer`,
+ or set `read_only=True` 
+on nested serializer 
+fields.
+
+===========================
+===========================
+================
+FAIL: 
+test_paiement_complet (comm
+andes.tests.PaiementTestCas
+e.test_paiement_complet)
+---------------------------
+---------------------------
+----------------
+Traceback (most recent 
+call last):
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\apps\commandes\
+tests.py", line 90, in 
+setUp
+    res = self.client.post(
+create_url, create_data, 
+format='json')
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 283, in post
+    response = 
+super().post(
+        path, data=data, 
+format=format, 
+content_type=content_type, 
+**extra)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 197, in post
+    return 
+self.generic('POST', path, 
+data, content_type, 
+**extra)
+           ~~~~~~~~~~~~^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 221, in generic
+    return super().generic(
+           ~~~~~~~~~~~~~~~^
+        method, path, 
+data, content_type, 
+secure, **extra)
+        ^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\test\client.
+py", line 671, in generic
+    return 
+self.request(**r)
+           
+~~~~~~~~~~~~^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 273, in request
+    return 
+super().request(**kwargs)
+           
+~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 225, in request
+    request = 
+super().request(**kwargs)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\test\client.
+py", line 1087, in request
+    self.check_exception(re
+sponse)
+    ~~~~~~~~~~~~~~~~~~~~^^^
+^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\test\client.
+py", line 802, in 
+check_exception
+    raise exc_value
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\core\handler
+s\exception.py", line 55, 
+in inner
+    response = 
+get_response(request)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\core\handler
+s\base.py", line 198, in 
+_get_response
+    response = 
+wrapped_callback(request, 
+*callback_args, 
+**callback_kwargs)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\views\decora
+tors\csrf.py", line 65, in 
+_view_wrapper
+    return 
+view_func(request, *args, 
+**kwargs)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+sets.py", line 125, in view
+    return 
+self.dispatch(request, 
+*args, **kwargs)
+           ~~~~~~~~~~~~~^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+s.py", line 515, in 
+dispatch
+    response = 
+self.handle_exception(exc)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+s.py", line 475, in 
+handle_exception
+    self.raise_uncaught_exc
+eption(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+s.py", line 486, in 
+raise_uncaught_exception
+    raise exc
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+s.py", line 512, in 
+dispatch
+    response = 
+handler(request, *args, 
+**kwargs)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\mixi
+ns.py", line 19, in create
+    self.perform_create(ser
+ializer)
+    ~~~~~~~~~~~~~~~~~~~^^^^
+^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\AppData\Local\Programs
+\Python\Python313\Lib\conte
+xtlib.py", line 85, in 
+inner
+    return func(*args, 
+**kwds)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\apps\commandes\
+views.py", line 38, in 
+perform_create
+    instance = 
+serializer.save(
+        numero=numero,
+        
+cree_par=self.request.user,
+        statut=statut
+    )
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\seri
+alizers.py", line 210, in 
+save
+    self.instance = 
+self.create(validated_data)
+                    
+~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\seri
+alizers.py", line 997, in 
+create
+    raise_errors_on_nested_
+writes('create', self, 
+validated_data)
+    ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\seri
+alizers.py", line 861, in r
+aise_errors_on_nested_write
+s
+    assert not any(
+           ^^^^^^^^
+    ...<5 lines>...
+    ), (
+    ^
+AssertionError: The 
+`.create()` method does 
+not support writable 
+nested fields by default.
+Write an explicit 
+`.create()` method for 
+serializer `commandes.seria
+lizers.CommandeSerializer`,
+ or set `read_only=True` 
+on nested serializer 
+fields.
+
+===========================
+===========================
+================
+FAIL: 
+test_paiement_partiel (comm
+andes.tests.PaiementTestCas
+e.test_paiement_partiel)
+---------------------------
+---------------------------
+----------------
+Traceback (most recent 
+call last):
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\apps\commandes\
+tests.py", line 90, in 
+setUp
+    res = self.client.post(
+create_url, create_data, 
+format='json')
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 283, in post
+    response = 
+super().post(
+        path, data=data, 
+format=format, 
+content_type=content_type, 
+**extra)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 197, in post
+    return 
+self.generic('POST', path, 
+data, content_type, 
+**extra)
+           ~~~~~~~~~~~~^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 221, in generic
+    return super().generic(
+           ~~~~~~~~~~~~~~~^
+        method, path, 
+data, content_type, 
+secure, **extra)
+        ^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\test\client.
+py", line 671, in generic
+    return 
+self.request(**r)
+           
+~~~~~~~~~~~~^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 273, in request
+    return 
+super().request(**kwargs)
+           
+~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 225, in request
+    request = 
+super().request(**kwargs)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\test\client.
+py", line 1087, in request
+    self.check_exception(re
+sponse)
+    ~~~~~~~~~~~~~~~~~~~~^^^
+^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\test\client.
+py", line 802, in 
+check_exception
+    raise exc_value
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\core\handler
+s\exception.py", line 55, 
+in inner
+    response = 
+get_response(request)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\core\handler
+s\base.py", line 198, in 
+_get_response
+    response = 
+wrapped_callback(request, 
+*callback_args, 
+**callback_kwargs)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\views\decora
+tors\csrf.py", line 65, in 
+_view_wrapper
+    return 
+view_func(request, *args, 
+**kwargs)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+sets.py", line 125, in view
+    return 
+self.dispatch(request, 
+*args, **kwargs)
+           ~~~~~~~~~~~~~^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+s.py", line 515, in 
+dispatch
+    response = 
+self.handle_exception(exc)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+s.py", line 475, in 
+handle_exception
+    self.raise_uncaught_exc
+eption(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+s.py", line 486, in 
+raise_uncaught_exception
+    raise exc
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+s.py", line 512, in 
+dispatch
+    response = 
+handler(request, *args, 
+**kwargs)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\mixi
+ns.py", line 19, in create
+    self.perform_create(ser
+ializer)
+    ~~~~~~~~~~~~~~~~~~~^^^^
+^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\AppData\Local\Programs
+\Python\Python313\Lib\conte
+xtlib.py", line 85, in 
+inner
+    return func(*args, 
+**kwds)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\apps\commandes\
+views.py", line 38, in 
+perform_create
+    instance = 
+serializer.save(
+        numero=numero,
+        
+cree_par=self.request.user,
+        statut=statut
+    )
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\seri
+alizers.py", line 210, in 
+save
+    self.instance = 
+self.create(validated_data)
+                    
+~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\seri
+alizers.py", line 997, in 
+create
+    raise_errors_on_nested_
+writes('create', self, 
+validated_data)
+    ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\seri
+alizers.py", line 861, in r
+aise_errors_on_nested_write
+s
+    assert not any(
+           ^^^^^^^^
+    ...<5 lines>...
+    ), (
+    ^
+AssertionError: The 
+`.create()` method does 
+not support writable 
+nested fields by default.
+Write an explicit 
+`.create()` method for 
+serializer `commandes.seria
+lizers.CommandeSerializer`,
+ or set `read_only=True` 
+on nested serializer 
+fields.
+
+===========================
+===========================
+================
+FAIL: test_vente_sans_stock
+_echoue (commandes.tests.St
+ockVenteTestCase.test_vente
+_sans_stock_echoue)
+---------------------------
+---------------------------
+----------------
+Traceback (most recent 
+call last):
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\apps\commandes\
+tests.py", line 148, in tes
+t_vente_sans_stock_echoue
+    response = 
+self.client.post(url, 
+data, format='json')
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 283, in post
+    response = 
+super().post(
+        path, data=data, 
+format=format, 
+content_type=content_type, 
+**extra)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 197, in post
+    return 
+self.generic('POST', path, 
+data, content_type, 
+**extra)
+           ~~~~~~~~~~~~^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 221, in generic
+    return super().generic(
+           ~~~~~~~~~~~~~~~^
+        method, path, 
+data, content_type, 
+secure, **extra)
+        ^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\test\client.
+py", line 671, in generic
+    return 
+self.request(**r)
+           
+~~~~~~~~~~~~^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 273, in request
+    return 
+super().request(**kwargs)
+           
+~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\test
+.py", line 225, in request
+    request = 
+super().request(**kwargs)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\test\client.
+py", line 1087, in request
+    self.check_exception(re
+sponse)
+    ~~~~~~~~~~~~~~~~~~~~^^^
+^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\test\client.
+py", line 802, in 
+check_exception
+    raise exc_value
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\core\handler
+s\exception.py", line 55, 
+in inner
+    response = 
+get_response(request)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\core\handler
+s\base.py", line 198, in 
+_get_response
+    response = 
+wrapped_callback(request, 
+*callback_args, 
+**callback_kwargs)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\django\views\decora
+tors\csrf.py", line 65, in 
+_view_wrapper
+    return 
+view_func(request, *args, 
+**kwargs)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+sets.py", line 125, in view
+    return 
+self.dispatch(request, 
+*args, **kwargs)
+           ~~~~~~~~~~~~~^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+s.py", line 515, in 
+dispatch
+    response = 
+self.handle_exception(exc)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+s.py", line 475, in 
+handle_exception
+    self.raise_uncaught_exc
+eption(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+s.py", line 486, in 
+raise_uncaught_exception
+    raise exc
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\view
+s.py", line 512, in 
+dispatch
+    response = 
+handler(request, *args, 
+**kwargs)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\mixi
+ns.py", line 19, in create
+    self.perform_create(ser
+ializer)
+    ~~~~~~~~~~~~~~~~~~~^^^^
+^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\AppData\Local\Programs
+\Python\Python313\Lib\conte
+xtlib.py", line 85, in 
+inner
+    return func(*args, 
+**kwds)
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\apps\commandes\
+views.py", line 38, in 
+perform_create
+    instance = 
+serializer.save(
+        numero=numero,
+        
+cree_par=self.request.user,
+        statut=statut
+    )
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\seri
+alizers.py", line 210, in 
+save
+    self.instance = 
+self.create(validated_data)
+                    
+~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\seri
+alizers.py", line 997, in 
+create
+    raise_errors_on_nested_
+writes('create', self, 
+validated_data)
+    ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^
+  File "C:\Users\Djiba Kour
+ouma\Desktop\BSG\AutoPieces
+Pro\backend\venv\Lib\site-p
+ackages\rest_framework\seri
+alizers.py", line 861, in r
+aise_errors_on_nested_write
+s
+    assert not any(
+           ^^^^^^^^
+    ...<5 lines>...
+    ), (
+    ^
+AssertionError: The 
+`.create()` method does 
+not support writable 
+nested fields by default.
+Write an explicit 
+`.create()` method for 
+serializer `commandes.seria
+lizers.CommandeSerializer`,
+ or set `read_only=True` 
+on nested serializer 
+fields.
+
+---------------------------
+---------------------------
+----------------
+Ran 8 tests in 9.824s
+
+FAILED (failures=4, 
+errors=4)
+Destroying test database 
+for alias 'default'...
+
+Found 8 test(s).
+System check identified no issues (0 silenced).
