@@ -14,6 +14,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'bsg-web-dev-secret-change-in-prod-xyz
 DEBUG      = os.environ.get('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com,*').split(',')
 
+# Indispensable pour Render (proxy HTTPS)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
