@@ -1,0 +1,192 @@
+{% extends 'web/base.html' %}
+{% block title %}Employés{% endblock %}
+{% block page_title %}Gestion des Employés{% endblock %}
+
+{% block content %}
+
+<!-- KPIs équipe -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-2">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Total</div>
+      <div class="kpi-value">{{ stats.total }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-2">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Actifs</div>
+      <div class="kpi-value" style="color:#1e8449">{{ stats.actifs }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-2">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Inactifs</div>
+      <div class="kpi-value" style="color:#c0392b">{{ stats.inactifs }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-2">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Admins</div>
+      <div class="kpi-value" style="color:#e8593c">{{ stats.admins }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-2">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Employés</div>
+      <div class="kpi-value" style="color:#185FA5">{{ stats.employes }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-2">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Magasiniers</div>
+      <div class="kpi-value" style="color:#534AB7">{{ stats.magasiniers }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Bouton créer -->
+<div class="d-flex justify-content-end gap-2 mb-3">
+  <a href="{% url 'web:employes_pdf' %}" class="btn btn-outline-danger fw-bold" style="border-radius:10px">
+    <i class="bi bi-file-earmark-pdf me-2"></i>Exporter PDF
+  </a>
+  <a href="{% url 'web:employe_nouveau' %}" class="btn fw-bold px-4"
+     style="background:#1a3a5c;color:#fff;border-radius:10px">
+    <i class="bi bi-person-plus me-2"></i>Créer un accès
+  </a>
+</div>
+
+<!-- Tableau employés -->
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead>
+        <tr>
+          <th>Employé</th>
+          <th>Email</th>
+          <th style="width:160px">Rôle</th>
+          <th>Statut</th>
+          <th>Créé le</th>
+          <th>Tentatives</th>
+          <th style="width:180px">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr class="{% if not u.actif %}opacity-50{% endif %}">
+
+          <!-- Avatar + nom -->
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="avatar-role avatar-{{ u.role }}">
+                {{ u.nom|slice:":2"|upper }}
+              </div>
+              <div>
+                <div class="fw-semibold" style="font-size:14px">
+                  {{ u.nom }}
+                  {% if u == request.user %}
+                    <span class="badge bg-secondary bg-opacity-15 text-secondary ms-1" style="font-size:10px">Vous</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </td>
+
+          <!-- Email -->
+          <td style="font-size:13px;color:#6c757d">{{ u.email }}</td>
+
+          <!-- Rôle — changeable inline -->
+          <td>
+            {% if u != request.user %}
+            <form method="post" action="{% url 'web:employe_role' u.pk %}">
+              {% csrf_token %}
+              <select name="role" class="form-select form-select-sm"
+                      onchange="this.form.submit()">
+                {% for val, lbl in roles %}
+                <option value="{{ val }}" {% if u.role == val %}selected{% endif %}>
+                  {{ lbl }}
+                </option>
+                {% endfor %}
+              </select>
+            </form>
+            {% else %}
+            <span class="role-badge role-{{ u.role }} px-3 py-2">
+              {{ u.get_role_display }}
+            </span>
+            {% endif %}
+          </td>
+
+          <!-- Statut -->
+          <td>
+            {% if u.actif %}
+              <span class="badge bg-success bg-opacity-15 text-success" style="font-size:11px">
+                <i class="bi bi-circle-fill me-1" style="font-size:7px"></i>Actif
+              </span>
+            {% else %}
+              <span class="badge bg-danger bg-opacity-15 text-danger" style="font-size:11px">
+                <i class="bi bi-circle me-1" style="font-size:7px"></i>Désactivé
+              </span>
+            {% endif %}
+          </td>
+
+          <!-- Date création -->
+          <td style="font-size:12px;color:#6c757d">
+            {{ u.date_creation|date:"d M Y" }}
+          </td>
+
+          <!-- Tentatives échouées -->
+          <td>
+            {% if u.tentatives_echouees > 0 %}
+            <span class="badge bg-warning text-dark" style="font-size:11px">
+              <i class="bi bi-exclamation-triangle me-1"></i>{{ u.tentatives_echouees }}
+            </span>
+            {% else %}
+            <span class="text-muted" style="font-size:12px">—</span>
+            {% endif %}
+          </td>
+
+          <!-- Actions -->
+          <td>
+            <div class="d-flex gap-1">
+
+              <!-- Reset mot de passe -->
+              <a href="{% url 'web:employe_reset_password' u.pk %}"
+                 class="btn btn-sm btn-outline-secondary"
+                 title="Réinitialiser le mot de passe">
+                <i class="bi bi-key"></i>
+              </a>
+
+              <!-- Toggle actif/inactif -->
+              {% if u != request.user %}
+              <form method="post" action="{% url 'web:employe_toggle' u.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit"
+                        class="btn btn-sm {% if u.actif %}btn-outline-danger{% else %}btn-outline-success{% endif %}"
+                        title="{% if u.actif %}Désactiver{% else %}Activer{% endif %}"
+                        onclick="return confirm('{% if u.actif %}Désactiver{% else %}Réactiver{% endif %} {{ u.nom }} ?')">
+                  {% if u.actif %}
+                    <i class="bi bi-slash-circle"></i>
+                  {% else %}
+                    <i class="bi bi-check-circle"></i>
+                  {% endif %}
+                </button>
+              </form>
+              {% endif %}
+
+            </div>
+          </td>
+
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center text-muted py-5">
+            <i class="bi bi-people" style="font-size:2.5rem;opacity:.3"></i>
+            <p class="mt-2 mb-0">Aucun utilisateur trouvé</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

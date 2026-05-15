@@ -1,0 +1,195 @@
+:root {
+  --bsg-primary: #1a3a5c;
+  --bsg-accent:  #e8593c;
+  --bsg-sidebar: #0f2540;
+  --bsg-sidebar-text: rgba(255,255,255,.75);
+  --bsg-sidebar-active: rgba(255,255,255,.12);
+}
+
+body { background: #f4f6f9; font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+/* ── Sidebar ── */
+#sidebar {
+  width: 240px; height: 100vh;
+  background: var(--bsg-sidebar);
+  position: fixed; top: 0; left: 0; z-index: 100;
+  display: flex; flex-direction: column;
+  transition: width .2s;
+  overflow-y: auto;
+}
+.sidebar-brand {
+  padding: 1.25rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  color: #fff; font-weight: 700; font-size: 1.1rem;
+  display: flex; align-items: center; gap: 10px;
+}
+.sidebar-brand .brand-icon {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: var(--bsg-accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: #fff; flex-shrink: 0;
+}
+.sidebar-section {
+  font-size: 10px; font-weight: 600; letter-spacing: .08em;
+  color: rgba(255,255,255,.35);
+  padding: .75rem 1rem .25rem;
+  text-transform: uppercase;
+}
+.sidebar-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: .55rem 1rem; color: var(--bsg-sidebar-text);
+  text-decoration: none; border-radius: 6px; margin: 1px 8px;
+  font-size: 13.5px; transition: background .15s, color .15s;
+}
+.sidebar-link:hover, .sidebar-link.active {
+  background: var(--bsg-sidebar-active); color: #fff;
+}
+.sidebar-link .bi { font-size: 16px; flex-shrink: 0; }
+.badge-sidebar {
+  margin-left: auto; font-size: 10px; padding: 2px 6px;
+}
+.sidebar-footer {
+  margin-top: auto; padding: .75rem 1rem;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+/* ── Contenu principal ── */
+#main-content {
+  margin-left: 240px;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+}
+
+/* ── Topbar ── */
+#topbar {
+  background: #fff;
+  border-bottom: 1px solid #e9ecef;
+  padding: .6rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 99;
+}
+.topbar-title { font-weight: 600; font-size: 1rem; color: var(--bsg-primary); }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.user-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: #f8f9fa; border-radius: 20px;
+  padding: 4px 12px 4px 6px; font-size: 13px;
+  text-decoration: none; color: inherit;
+}
+.user-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--bsg-accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+
+/* ── Page content ── */
+.page-content { padding: 1.5rem; flex: 1; }
+
+/* ── Cartes KPI ── */
+.kpi-card {
+  background: #fff; border-radius: 12px;
+  border: 1px solid #e9ecef;
+  padding: 1.1rem 1.25rem;
+}
+.kpi-label { font-size: 11px; font-weight: 600; color: #6c757d;
+             text-transform: uppercase; letter-spacing: .05em; }
+.kpi-value { font-size: 1.75rem; font-weight: 700; color: var(--bsg-primary);
+             line-height: 1.2; margin-top: 4px; }
+.kpi-icon  { width: 42px; height: 42px; border-radius: 10px;
+             display: flex; align-items: center; justify-content: center;
+             font-size: 18px; }
+
+/* ── Tables ── */
+.table-card {
+  background: #fff; border-radius: 12px;
+  border: 1px solid #e9ecef; overflow: hidden;
+}
+.table-card .table { margin: 0; }
+.table-card .table th {
+  background: #f8f9fa; font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .05em; color: #6c757d;
+  border-bottom: 1px solid #e9ecef; padding: .7rem 1rem;
+}
+.table-card .table td { padding: .7rem 1rem; font-size: 13.5px; vertical-align: middle; }
+.table-card-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e9ecef;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.table-card-header h6 { margin: 0; font-weight: 600; font-size: 14px; }
+
+/* ── Badges statut commande ── */
+.badge-statut { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+.statut-EN_ATTENTE    { background: #fff3cd; color: #856404; }
+.statut-VALIDEE       { background: #d1ecf1; color: #0c5460; }
+.statut-EN_PREPARATION{ background: #e2d9f3; color: #432874; }
+.statut-PRETE         { background: #cce5ff; color: #004085; }
+.statut-EXPEDIEE      { background: #d4edda; color: #155724; }
+.statut-LIVREE        { background: #d4edda; color: #155724; }
+.statut-ANNULEE       { background: #f8d7da; color: #721c24; }
+
+/* ── Badges Rôles ── */
+.role-badge { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+.role-ADMIN      { background: #FAECE7; color: #993C1D; }
+.role-MAGASINIER { background: #EEEDFE; color: #3C3489; }
+.role-EMPLOYE    { background: #E6F1FB; color: #0C447C; }
+
+.avatar-role { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.avatar-ADMIN      { background: #e8593c; }
+.avatar-MAGASINIER { background: #534AB7; }
+.avatar-EMPLOYE    { background: #185FA5; }
+
+/* ── Couleurs Dynamiques ── */
+.color-success { color: #1e8449 !important; }
+.color-primary { color: #185FA5 !important; }
+.color-warning { color: #e67e22 !important; }
+.color-danger  { color: #c0392b !important; }
+.color-muted   { color: #6c757d !important; }
+.color-dark    { color: #1a3a5c !important; }
+
+.bg-success-subtle { background: rgba(30,132,73,.15) !important; }
+.bg-primary-subtle { background: rgba(24,95,165,.15) !important; }
+.bg-warning-subtle { background: rgba(230,126,34,.15) !important; }
+.bg-danger-subtle  { background: rgba(192,57,43,.15) !important; }
+.border-success-bsg { border-left: 4px solid #1e8449 !important; }
+.border-warning-bsg { border-left: 4px solid #e67e22 !important; }
+.border-danger-bsg  { border-left: 4px solid #c0392b !important; }
+
+/* ── Risk Levels (Score Risque) ── */
+.risk-score-circle {
+  width: 42px; height: 42px; border-radius: 50%; margin: 0 auto;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; border: 2px solid transparent;
+}
+.risk-score-excellent { border-color: #1e8449; background: rgba(30,132,73,.1); color: #1e8449; }
+.risk-score-bon       { border-color: #185FA5; background: rgba(24,95,165,.1); color: #185FA5; }
+.risk-score-moyen     { border-color: #e67e22; background: rgba(230,126,34,.1); color: #e67e22; }
+.risk-score-risque-eleve { border-color: #c0392b; background: rgba(192,57,43,.1); color: #c0392b; }
+
+.risk-fill-excellent { background: #1e8449; }
+.risk-fill-bon       { background: #185FA5; }
+.risk-fill-moyen     { background: #e67e22; }
+.risk-fill-risque-eleve { background: #c0392b; }
+
+.risk-text-excellent { color: #1e8449; }
+.risk-text-bon       { color: #185FA5; }
+.risk-text-moyen     { color: #e67e22; }
+.risk-text-risque-eleve { color: #c0392b; }
+
+/* ── IA Categories ── */
+.risk-text-star       { color: #1e8449; }
+.risk-text-vache      { color: #185FA5; }
+.risk-text-dilemme    { color: #BA7517; }
+.risk-text-poids-mort { color: #c0392b; }
+
+/* ── Alertes HTMX ── */
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator { display: inline-block; }
+.htmx-request.htmx-indicator  { display: inline-block; }
+
+/* ── Responsive sidebar ── */
+@media (max-width: 768px) {
+  #sidebar { width: 0; overflow: hidden; }
+  #main-content { margin-left: 0; }
+}

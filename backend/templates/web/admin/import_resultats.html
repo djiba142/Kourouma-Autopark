@@ -1,0 +1,87 @@
+{% extends 'web/base.html' %}
+{% block title %}Résultats Import{% endblock %}
+{% block page_title %}📊 Résultats Import Produits{% endblock %}
+
+{% block content %}
+
+<!-- KPIs résultats -->
+<div class="row g-3 mb-4">
+  <div class="col-4">
+    <div class="kpi-card text-center" style="border-left:4px solid #1e8449">
+      <div class="kpi-label text-success">Créés</div>
+      <div class="kpi-val text-success">{{ nb_ok }}</div>
+    </div>
+  </div>
+  <div class="col-4">
+    <div class="kpi-card text-center" style="border-left:4px solid #BA7517">
+      <div class="kpi-label" style="color:#BA7517">Doublons</div>
+      <div class="kpi-val" style="color:#BA7517">{{ nb_skip }}</div>
+    </div>
+  </div>
+  <div class="col-4">
+    <div class="kpi-card text-center" style="border-left:4px solid #c0392b">
+      <div class="kpi-label text-danger">Erreurs</div>
+      <div class="kpi-val text-danger">{{ nb_err }}</div>
+    </div>
+  </div>
+</div>
+
+{% if nb_ok > 0 %}
+<div class="alert alert-success d-flex gap-2 mb-3" style="border-radius:12px">
+  <i class="bi bi-check-circle-fill flex-shrink-0 mt-1"></i>
+  <div>
+    <strong>{{ nb_ok }} produit{{ nb_ok|pluralize }} importé{{ nb_ok|pluralize }} avec succès.</strong>
+    Ils sont maintenant disponibles dans le catalogue.
+  </div>
+</div>
+{% endif %}
+
+<!-- Tableau résultats -->
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead>
+        <tr>
+          <th style="width:50px">Ligne</th>
+          <th>Produit</th>
+          <th>Référence</th>
+          <th>Statut</th>
+          <th>Message</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in resultats %}
+        <tr class="{% if r.statut == 'ERREUR' %}table-danger{% elif r.statut == 'DOUBLON' %}table-warning{% endif %}">
+          <td class="text-muted" style="font-size:12px">{{ r.ligne }}</td>
+          <td class="fw-semibold" style="font-size:13px">{{ r.nom }}</td>
+          <td style="font-family:monospace;font-size:12px">{{ r.reference }}</td>
+          <td>
+            {% if r.statut == 'OK' %}
+            <span class="badge bg-success" style="font-size:10px">✓ Créé</span>
+            {% elif r.statut == 'DOUBLON' %}
+            <span class="badge bg-warning text-dark" style="font-size:10px">⚠ Doublon</span>
+            {% else %}
+            <span class="badge bg-danger" style="font-size:10px">✗ Erreur</span>
+            {% endif %}
+          </td>
+          <td style="font-size:12px;color:#6c757d">{{ r.message }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Actions -->
+<div class="d-flex gap-3 mt-4">
+  <a href="{% url 'web:import_produits' %}" class="btn fw-bold px-4"
+     style="background:#1a3a5c;color:#fff;border-radius:10px">
+    <i class="bi bi-arrow-repeat me-2"></i>Nouvel import
+  </a>
+  <a href="{% url 'web:produits_liste' %}" class="btn btn-outline-secondary px-4"
+     style="border-radius:10px">
+    <i class="bi bi-grid me-2"></i>Voir le catalogue
+  </a>
+</div>
+
+{% endblock %}

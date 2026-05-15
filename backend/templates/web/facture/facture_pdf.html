@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+  @page { size: A4; margin: 15mm 20mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 12px; color: #1a1a1a; }
+
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; padding-bottom: 20px; border-bottom: 2px solid #1a3a5c; }
+  .company-name { font-size: 22px; font-weight: 700; color: #1a3a5c; }
+  .company-sub  { font-size: 11px; color: #6c757d; margin-top: 3px; }
+
+  .facture-badge { background: #e8593c; color: #fff; padding: 8px 20px; border-radius: 6px; font-weight: 700; font-size: 14px; text-align: center; }
+  .facture-num   { font-size: 11px; color: #fff; opacity: .85; margin-top: 3px; }
+
+  .parties { display: flex; justify-content: space-between; margin-bottom: 28px; }
+  .partie { width: 48%; }
+  .partie-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #6c757d; margin-bottom: 6px; }
+  .partie-nom   { font-size: 14px; font-weight: 700; color: #1a3a5c; }
+  .partie-info  { font-size: 11px; color: #555; margin-top: 3px; line-height: 1.6; }
+
+  .infos-ligne { display: flex; gap: 24px; background: #f4f6f9; border-radius: 8px; padding: 12px 16px; margin-bottom: 24px; font-size: 11px; }
+  .info-item .il { color: #6c757d; font-weight: 600; }
+  .info-item .iv { color: #1a3a5c; font-weight: 700; margin-top: 2px; }
+
+  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+  thead th { background: #1a3a5c; color: #fff; padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+  thead th:last-child { text-align: right; }
+  tbody tr:nth-child(even) { background: #f8f9fa; }
+  tbody td { padding: 10px 12px; border-bottom: 1px solid #e9ecef; font-size: 12px; vertical-align: middle; }
+  tbody td:last-child { text-align: right; font-weight: 600; }
+  .ref { color: #6c757d; font-size: 10px; margin-top: 2px; }
+
+  .totaux { width: 280px; margin-left: auto; }
+  .totaux-ligne { display: flex; justify-content: space-between; padding: 7px 0; font-size: 12px; border-bottom: 1px solid #e9ecef; }
+  .totaux-ligne.total { font-weight: 700; font-size: 14px; color: #1a3a5c; border-bottom: 2px solid #1a3a5c; padding-top: 10px; }
+  .totaux-ligne.reste { font-weight: 700; color: #e8593c; }
+
+  .paiements { margin-top: 24px; padding: 16px; background: #f4f6f9; border-radius: 8px; }
+  .paiements h4 { font-size: 12px; font-weight: 700; color: #1a3a5c; margin-bottom: 10px; text-transform: uppercase; letter-spacing: .05em; }
+  .paie-ligne { display: flex; justify-content: space-between; font-size: 11px; padding: 4px 0; }
+
+  .footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid #e9ecef; display: flex; justify-content: space-between; font-size: 10px; color: #6c757d; }
+
+  .statut-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+  .statut-paye   { background: #d4edda; color: #155724; }
+  .statut-partiel{ background: #fff3cd; color: #856404; }
+  .statut-impaye { background: #f8d7da; color: #721c24; }
+</style>
+</head>
+<body>
+
+{% load static %}
+<!-- EN-TÊTE -->
+<div class="header">
+  <div style="display: flex; align-items: center; gap: 15px;">
+    <img src="{% static "web/img/logo_bangaly.png" %}" alt="Logo" style="width: 60px; height: auto; border-radius: 8px;">
+    <div>
+      <div class="company-name">BANGALY-AUTOPARK-BSG</div>
+      <div class="company-sub">Solutions Automobiles Premium</div>
+      <div class="company-sub" style="margin-top:4px">Conakry, Guinée · Tél: +224 6XX XX XX XX</div>
+    </div>
+  </div>
+  <div style="text-align:right; display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+    <div class="facture-badge">
+      FACTURE
+      <div class="facture-num">{{ commande.numero }}</div>
+    </div>
+    <!-- QR Code de vérification -->
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=Facture_{{ commande.numero }}" alt="QR Code" style="width: 60px; height: 60px; border: 1px solid #eee; padding: 2px;">
+  </div>
+</div>
+
+<!-- PARTIES -->
+<div class="parties">
+  <div class="partie">
+    <div class="partie-label">Émetteur</div>
+    <div class="partie-nom">BSG Dashboard</div>
+    <div class="partie-info">
+      Conakry, Guinée<br>
+      support@bsg.com<br>
+      {{ commande.cree_par.nom|default:"BSG" }}
+    </div>
+  </div>
+  <div class="partie">
+    <div class="partie-label">Client</div>
+    <div class="partie-nom">{{ commande.client.nom|default:"Client Comptoir" }}</div>
+    {% if commande.client %}
+    <div class="partie-info">
+      {{ commande.client.telephone }}<br>
+      {% if commande.client.email %}{{ commande.client.email }}<br>{% endif %}
+      {% if commande.client.adresse %}{{ commande.client.adresse }}{% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- INFOS COMMANDE -->
+<div class="infos-ligne">
+  <div class="info-item">
+    <div class="il">Date</div>
+    <div class="iv">{{ commande.date_creation|date:"d/m/Y" }}</div>
+  </div>
+  <div class="info-item">
+    <div class="il">Référence</div>
+    <div class="iv">{{ commande.numero }}</div>
+  </div>
+  <div class="info-item">
+    <div class="il">Statut paiement</div>
+    <div class="iv">
+      <span class="statut-badge
+        {% if commande.statut_paiement == 'PAYE' %}statut-paye
+        {% elif commande.statut_paiement == 'PARTIEL' %}statut-partiel
+        {% else %}statut-impaye{% endif %}">
+        {{ commande.get_statut_paiement_display }}
+      </span>
+    </div>
+  </div>
+  <div class="info-item">
+    <div class="il">Type de vente</div>
+    <div class="iv">{{ commande.get_type_vente_display|default:"Vente" }}</div>
+  </div>
+</div>
+
+<!-- LIGNES -->
+<table>
+  <thead>
+    <tr>
+      <th style="width:40%">Désignation</th>
+      <th style="width:12%;text-align:right">Qté</th>
+      <th style="width:22%;text-align:right">Prix Unitaire</th>
+      <th style="width:26%">Sous-total</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for l in lignes %}
+    <tr>
+      <td>
+        <div>{{ l.produit.nom }}</div>
+        <div class="ref">Réf: {{ l.produit.reference }}</div>
+      </td>
+      <td style="text-align:right">{{ l.quantite }}</td>
+      <td style="text-align:right">{{ l.prix_unitaire|floatformat:0 }} GNF</td>
+      <td style="text-align:right">{{ l.sous_total|floatformat:0 }} GNF</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- TOTAUX -->
+<div class="totaux">
+  <div class="totaux-ligne">
+    <span>Total HT</span>
+    <span>{{ commande.total_ht|floatformat:0 }} GNF</span>
+  </div>
+  {% if commande.remise > 0 %}
+  <div class="totaux-ligne" style="color:#e8593c">
+    <span>Remise{% if commande.type_remise == 'POURCENT' %} ({{ commande.remise }}%){% endif %}</span>
+    <span>- {{ commande.remise|floatformat:0 }}{% if commande.type_remise == 'POURCENT' %}%{% else %} GNF{% endif %}</span>
+  </div>
+  {% endif %}
+  <div class="totaux-ligne total">
+    <span>NET À PAYER</span>
+    <span>{{ commande.total_ttc|floatformat:0 }} GNF</span>
+  </div>
+  <div class="totaux-ligne" style="color:#1e8449;font-weight:600">
+    <span>Total payé</span>
+    <span>{{ total_paye|floatformat:0 }} GNF</span>
+  </div>
+  {% if reste > 0 %}
+  <div class="totaux-ligne reste">
+    <span>RESTE DÛ</span>
+    <span>{{ reste|floatformat:0 }} GNF</span>
+  </div>
+  {% endif %}
+</div>
+
+<!-- HISTORIQUE PAIEMENTS -->
+{% if paiements %}
+<div class="paiements">
+  <h4>Historique des paiements</h4>
+  {% for p in paiements %}
+  <div class="paie-ligne">
+    <span>{{ p.date_paiement|date:"d/m/Y" }} — {{ p.get_mode_paiement_display }}
+      {% if p.reference_transaction %} (Réf: {{ p.reference_transaction }}){% endif %}
+    </span>
+    <span style="font-weight:600;color:#1e8449">{{ p.montant|floatformat:0 }} GNF</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- PIED DE PAGE -->
+<div class="footer">
+  <div>
+    Facture générée par BSG Dashboard · {{ commande.date_creation|date:"d/m/Y à H:i" }}
+  </div>
+  <div>
+    Document non contractuel · Conservez ce document pour votre comptabilité
+  </div>
+</div>
+
+</body>
+</html>

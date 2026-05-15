@@ -1,0 +1,159 @@
+{% extends 'web/base.html' %}
+{% load humanize %}
+{% block title %}Commandes Achat{% endblock %}
+{% block page_title %}Commandes Achat Fournisseur{% endblock %}
+
+{% block content %}
+
+<!-- KPIs -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex align-items-center gap-3">
+      <div class="kpi-icon" style="background:#E6F1FB">
+        <i class="bi bi-basket" style="color:#185FA5;font-size:20px"></i>
+      </div>
+      <div>
+        <div class="kpi-label">Achats ce mois</div>
+        <div class="kpi-value" style="font-size:1.1rem">{{ total_gnf_mois|floatformat:0 }} GNF</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card d-flex align-items-center gap-3">
+      <div class="kpi-icon" style="background:#FAEEDA">
+        <i class="bi bi-clock" style="color:#BA7517;font-size:20px"></i>
+      </div>
+      <div>
+        <div class="kpi-label">En attente</div>
+        <div class="kpi-value" style="color:#BA7517">{{ nb_en_attente }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-auto ms-auto align-self-center">
+    <a href="{% url 'web:achat_nouveau' %}" class="btn fw-bold px-4"
+       style="background:#1a3a5c;color:#fff;border-radius:10px">
+      <i class="bi bi-plus-circle me-2"></i>Nouvelle commande achat
+    </a>
+  </div>
+</div>
+
+<!-- Filtres -->
+<div class="card border-0 shadow-sm mb-3" style="border-radius:12px">
+  <div class="card-body py-2">
+    <form class="row g-2 align-items-end" method="get">
+      <div class="col-md-3">
+        <select name="statut" class="form-select form-select-sm">
+          <option value="">Tous les statuts</option>
+          {% for val, lbl in statuts %}
+          <option value="{{ val }}" {% if filtre_statut == val %}selected{% endif %}>{{ lbl }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <select name="fourn" class="form-select form-select-sm">
+          <option value="">Tous les fournisseurs</option>
+          {% for f in fournisseurs %}
+          <option value="{{ f.pk }}" {% if filtre_fourn == f.pk|stringformat:"s" %}selected{% endif %}>{{ f.nom }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-sm btn-primary">Filtrer</button>
+        <a href="{% url 'web:achats_liste' %}" class="btn btn-sm btn-outline-secondary ms-1">Reset</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Tableau -->
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead>
+        <tr>
+          <th>Référence PO</th>
+          <th>Fournisseur</th>
+          <th>Devise</th>
+          <th class="text-end">Total Devise</th>
+          <th class="text-end">Total GNF</th>
+          <th>Statut</th>
+          <th>Date Commande</th>
+          <th>Réception prévue</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for achat in achats %}
+        <tr>
+          <td class="fw-bold" style="font-family:monospace;font-size:13px">
+            {{ achat.reference }}
+          </td>
+          <td>
+            <div class="fw-semibold" style="font-size:13px">{{ achat.fournisseur.nom }}</div>
+            <div class="text-muted" style="font-size:11px">{{ achat.fournisseur.pays }}</div>
+          </td>
+          <td>
+            <span class="badge bg-secondary bg-opacity-15 text-secondary" style="font-size:11px">
+              {{ achat.devise }}
+            </span>
+          </td>
+          <td class="text-end" style="font-size:13px">
+            {{ achat.total_devise|floatformat:2 }} {{ achat.devise }}
+          </td>
+          <td class="text-end fw-bold" style="color:#1a3a5c">
+            {{ achat.total_gnf|floatformat:0 }} GNF
+          </td>
+          <td>
+            {% if achat.statut == 'BROUILLON' %}
+              <span class="badge bg-secondary" style="font-size:11px">Brouillon</span>
+            {% elif achat.statut == 'ENVOYEE' %}
+              <span class="badge bg-warning text-dark" style="font-size:11px">
+                <i class="bi bi-clock me-1"></i>Envoyée
+              </span>
+            {% elif achat.statut == 'RECUE' %}
+              <span class="badge bg-success" style="font-size:11px">
+                <i class="bi bi-check-circle me-1"></i>Reçue
+              </span>
+            {% else %}
+              <span class="badge bg-danger" style="font-size:11px">Annulée</span>
+            {% endif %}
+          </td>
+          <td style="font-size:12px;color:#6c757d">{{ achat.date_commande|date:"d M Y" }}</td>
+          <td style="font-size:12px">
+            {% if achat.date_reception_prevue %}
+              {% if achat.statut == 'ENVOYEE' and achat.date_reception_prevue < today %}
+                <span class="text-danger fw-bold">
+                  <i class="bi bi-exclamation-triangle me-1"></i>{{ achat.date_reception_prevue|date:"d M Y" }}
+                </span>
+              {% else %}
+                {{ achat.date_reception_prevue|date:"d M Y" }}
+              {% endif %}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'web:achat_detail' achat.pk %}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-eye"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" class="text-center text-muted py-5">
+            <i class="bi bi-basket" style="font-size:2.5rem;opacity:.3"></i>
+            <p class="mt-2 mb-0">Aucune commande achat</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const today = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}

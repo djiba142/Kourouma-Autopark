@@ -1,0 +1,132 @@
+{% extends 'web/base.html' %}
+{% block title %}Intelligence Artificielle{% endblock %}
+{% block page_title %}🤖 Intelligence Artificielle BSG{% endblock %}
+
+{% block extra_css %}
+<style>
+  .ia-card { background:#fff; border-radius:16px; border:1px solid #e9ecef;
+             padding:1.5rem; cursor:pointer; transition:transform .15s, box-shadow .15s; }
+  .ia-card:hover { transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,0,0,.1); }
+  .ia-icon { width:52px; height:52px; border-radius:14px;
+             display:flex; align-items:center; justify-content:center; font-size:22px; }
+  .alert-banner { border-radius:12px; padding:12px 16px; font-size:13px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Bannières alertes actives -->
+{% if nb_alertes_stock > 0 %}
+<div class="alert-banner d-flex align-items-center gap-3 mb-3"
+     style="background:#EBF4FF;border:1px solid #93C5FD">
+  <i class="bi bi-graph-up-arrow" style="color:#185FA5;font-size:20px"></i>
+  <div>
+    <strong>{{ nb_alertes_stock }} produit{{ nb_alertes_stock|pluralize }} en rupture prévue</strong>
+    dans les 7 prochains jours selon le modèle de prédiction.
+    <a href="{% url 'web:ia_ventes' %}" class="ms-2 fw-bold" style="color:#185FA5">Voir →</a>
+  </div>
+</div>
+{% endif %}
+
+{% if nb_anomalies > 0 %}
+<div class="alert-banner d-flex align-items-center gap-3 mb-3"
+     style="background:#FEF2F2;border:1px solid #FECACA">
+  <i class="bi bi-shield-exclamation" style="color:#C0392B;font-size:20px"></i>
+  <div>
+    <strong>{{ nb_anomalies }} opération{{ nb_anomalies|pluralize }} financière{{ nb_anomalies|pluralize }} suspecte{{ nb_anomalies|pluralize }}</strong>
+    détectée{{ nb_anomalies|pluralize }} sur les 30 derniers jours.
+    <a href="{% url 'web:ia_anomalies' %}" class="ms-2 fw-bold" style="color:#C0392B">Vérifier →</a>
+  </div>
+</div>
+{% endif %}
+
+<!-- En-tête explicatif -->
+<div class="card border-0 shadow-sm mb-4" style="border-radius:14px;background:linear-gradient(135deg,#1a3a5c,#2d6a9f);color:#fff">
+  <div class="card-body p-4">
+    <div class="row align-items-center">
+      <div class="col">
+        <h5 class="fw-bold mb-1">Module Intelligence Artificielle</h5>
+        <p class="mb-0" style="opacity:.8;font-size:13px">
+          4 modèles ML entraînés directement sur vos données BSG.
+          Aucune donnée n'est envoyée à l'extérieur — tout s'exécute sur votre serveur.
+        </p>
+      </div>
+      <div class="col-auto">
+        <div style="font-size:3rem">🤖</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4 modules -->
+<div class="row g-3 mb-4">
+
+  {% for m in modules %}
+  <div class="col-md-6">
+    <a href="{% url m.url %}" class="text-decoration-none">
+      <div class="ia-card">
+        <div class="d-flex align-items-start gap-3">
+          <div class="ia-icon" style="--m-bg: {{ m.bg }}; background: var(--m-bg)">
+            <i class="bi {{ m.icon }}" style="--m-color: {{ m.color }}; color: var(--m-color)"></i>
+          </div>
+          <div class="flex-grow-1">
+            <div class="fw-bold mb-1" style="color:#1a3a5c;font-size:15px">{{ m.nom }}</div>
+            <div class="text-muted" style="font-size:12px">{{ m.description }}</div>
+          </div>
+          <i class="bi bi-chevron-right text-muted mt-1"></i>
+        </div>
+
+        {% if m.url == 'ia_ventes' and nb_alertes_stock > 0 %}
+        <div class="mt-3 d-flex align-items-center gap-2"
+             style="background:#EBF4FF;border-radius:8px;padding:8px 12px">
+          <i class="bi bi-exclamation-circle" style="color:#185FA5;font-size:13px"></i>
+          <span style="font-size:12px;color:#185FA5;font-weight:600">
+            {{ nb_alertes_stock }} alerte{{ nb_alertes_stock|pluralize }} stock
+          </span>
+        </div>
+        {% endif %}
+
+        {% if m.url == 'ia_anomalies' and nb_anomalies > 0 %}
+        <div class="mt-3 d-flex align-items-center gap-2"
+             style="background:#FEF2F2;border-radius:8px;padding:8px 12px">
+          <i class="bi bi-shield-exclamation" style="color:#C0392B;font-size:13px"></i>
+          <span style="font-size:12px;color:#C0392B;font-weight:600">
+            {{ nb_anomalies }} anomalie{{ nb_anomalies|pluralize }}
+          </span>
+        </div>
+        {% endif %}
+
+        {% if m.url == 'ia_rentabilite' %}
+        <div class="mt-3 d-flex gap-2">
+          <span style="background:#EAF3DE;color:#27500A;font-size:10px;font-weight:700;padding:3px 10px;border-radius:12px">
+            ⭐ {{ nb_stars }} STAR
+          </span>
+          <span style="background:#F8D7DA;color:#721C24;font-size:10px;font-weight:700;padding:3px 10px;border-radius:12px">
+            💀 {{ nb_poids_morts }} POIDS MORT
+          </span>
+        </div>
+        {% endif %}
+
+      </div>
+    </a>
+  </div>
+  {% endfor %}
+
+</div>
+
+<!-- Note technique -->
+<div class="card border-0" style="border-radius:12px;background:#f8f9fa">
+  <div class="card-body p-3">
+    <h6 class="fw-bold mb-2" style="font-size:13px">
+      <i class="bi bi-cpu me-2 text-muted"></i>Algorithmes utilisés
+    </h6>
+    <div class="row g-2" style="font-size:12px;color:#6c757d">
+      <div class="col-md-3">📈 <strong>Régression Linéaire</strong><br>Prédiction des ventes</div>
+      <div class="col-md-3">🛡️ <strong>Isolation Forest</strong><br>Détection d'anomalies</div>
+      <div class="col-md-3">🔗 <strong>KNN Collaboratif</strong><br>Recommandations</div>
+      <div class="col-md-3">🔵 <strong>K-Means Clustering</strong><br>Analyse BCG</div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

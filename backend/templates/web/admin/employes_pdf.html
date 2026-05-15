@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des Employés</title>
+    <style>
+        body { font-family: 'Helvetica', sans-serif; font-size: 11px; color: #333; margin: 20px; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #1a3a5c; padding-bottom: 10px; }
+        .title { font-size: 20px; font-weight: bold; color: #1a3a5c; text-transform: uppercase; }
+        .date { font-size: 10px; color: #666; margin-top: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background-color: #1a3a5c; color: white; padding: 10px; text-align: left; }
+        td { padding: 8px; border-bottom: 1px solid #eee; }
+        .badge { padding: 3px 8px; border-radius: 4px; font-size: 9px; font-weight: bold; }
+        .status-active { color: #1e8449; }
+        .status-inactive { color: #c0392b; }
+        .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 9px; color: #999; border-top: 1px solid #eee; padding-top: 5px; }
+    </style>
+</head>
+<body>
+{% load static %}
+    <div class="header" style="display: flex; justify-content: space-between; align-items: center; text-align: left;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <img src="{% static "web/img/logo_bangaly.png" %}" alt="Logo" style="width: 50px; height: auto;">
+            <div>
+                <div class="title" style="font-size: 16px;">BANGALY-AUTOPARK-BSG</div>
+                <div style="font-size: 10px; color: #666;">Liste du Personnel</div>
+            </div>
+        </div>
+        <div class="date" style="text-align: right;">Généré le {{ date|date:"d/m/Y à H:i" }}</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nom Complet</th>
+                <th>Email</th>
+                <th>Rôle</th>
+                <th>Téléphone</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td style="font-weight: bold;">{{ u.nom }}</td>
+                <td>{{ u.email }}</td>
+                <td>{{ u.get_role_display }}</td>
+                <td>{{ u.telephone|default:"—" }}</td>
+                <td class="{% if u.actif %}status-active{% else %}status-inactive{% endif %}">
+                    {% if u.actif %}Actif{% else %}Inactif{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        © 2026 AutoPiecesPro — Gestion Administrative — Page 1
+    </div>
+</body>
+</html>

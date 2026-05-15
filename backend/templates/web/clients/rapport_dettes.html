@@ -1,0 +1,308 @@
+{% extends 'web/base.html' %}
+{% load humanize %}
+{% block title %}Rapport Dettes{% endblock %}
+{% block page_title %}Rapport Dettes Clients{% endblock %}
+
+{% block extra_css %}
+<style>
+  .filtre-btn { border-radius:20px; font-size:12px; font-weight:600; padding:5px 16px; }
+  .filtre-btn.active { background:#1a3a5c; color:#fff; border-color:#1a3a5c; }
+  .score-badge { font-size:10px; font-weight:700; padding:3px 10px; border-radius:12px; }
+  .score-BON     { background:#EAF3DE; color:#27500A; }
+  .score-MOYEN   { background:#FAEEDA; color:#633806; }
+  .score-MAUVAIS { background:#FAECE7; color:#993C1D; }
+  .score-BLOQUE  { background:#F8D7DA; color:#721C24; }
+  .dette-bar  { height:8px; border-radius:4px; background:#e9ecef; overflow:hidden; }
+  .dette-fill { height:100%; border-radius:4px; }
+  .rang-badge { width:28px; height:28px; border-radius:50%;
+                display:flex; align-items:center; justify-content:center;
+                font-size:11px; font-weight:700; flex-shrink:0; }
+  .kpi-card { background:#fff; border-radius:14px; border:1px solid #e9ecef; padding:1.1rem 1.25rem; }
+  .kpi-label { font-size:11px; font-weight:600; color:#6c757d;
+               text-transform:uppercase; letter-spacing:.06em; }
+  .kpi-val { font-size:1.6rem; font-weight:700; line-height:1.2; margin-top:4px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- KPIs globaux -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-2">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Total Clients</div>
+      <div class="kpi-val">{{ total_clients }}</div>
+    </div>
+  </div>
+  <div class="col-12 col-md-3">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Dettes Totales</div>
+      <div class="kpi-val text-danger" style="font-size:1.3rem">
+        {{ total_dettes|floatformat:0 }} GNF
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-2">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Avec Dette</div>
+      <div class="kpi-val" style="color:#e67e22">{{ nb_avec_dette }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-2">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Alertes</div>
+      <div class="kpi-val text-danger">{{ nb_en_alerte }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-2">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Bloqués</div>
+      <div class="kpi-val" style="color:#7b241c">{{ nb_bloques }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-1 align-self-center text-center">
+    {% if is_admin %}
+    <a href="{% url 'web:export_dettes_excel' %}"
+       class="btn btn-success btn-sm fw-bold px-3 py-2" style="border-radius:10px">
+      <i class="bi bi-download d-block" style="font-size:18px"></i>
+      <span style="font-size:10px">Excel</span>
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Filtres -->
+<div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+  <a href="?filtre=tous"   class="btn btn-outline-secondary filtre-btn {% if filtre == 'tous' %}active{% endif %}">
+    Tous ({{ total_clients }})
+  </a>
+  <a href="?filtre=alerte" class="btn btn-outline-danger filtre-btn {% if filtre == 'alerte' %}active{% endif %}">
+    <i class="bi bi-exclamation-triangle me-1"></i>Limite dépassée ({{ nb_en_alerte }})
+  </a>
+  <a href="?filtre=bloque" class="btn btn-outline-dark filtre-btn {% if filtre == 'bloque' %}active{% endif %}">
+    <i class="bi bi-slash-circle me-1"></i>Bloqués ({{ nb_bloques }})
+  </a>
+  <a href="?filtre=bon"    class="btn btn-outline-success filtre-btn {% if filtre == 'bon' %}active{% endif %}">
+    <i class="bi bi-check-circle me-1"></i>Bons payeurs
+  </a>
+  {% if nb_cmd_impayes > 0 %}
+  <span class="badge bg-warning text-dark ms-auto"
+        style="font-size:12px;padding:8px 14px;border-radius:20px">
+    <i class="bi bi-clock me-1"></i>
+    {{ nb_cmd_impayes }} commande{{ nb_cmd_impayes|pluralize }} impayée{{ nb_cmd_impayes|pluralize }}
+  </span>
+  {% endif %}
+</div>
+
+<!-- Tableau classement -->
+<div class="table-card mb-4">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th>Client</th>
+          <th class="text-end">Total Achats</th>
+          <th class="text-end">Total Payé</th>
+          <th class="text-end">DETTE DUE</th>
+          <th style="width:160px">Limite Crédit</th>
+          <th>Score</th>
+          <th class="text-center">Cmd imp.</th>
+          <th style="width:120px">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr class="{% if row.alerte %}table-danger{% elif row.dette > 0 %}table-warning bg-opacity-25{% endif %}">
+
+          <td>
+            <div class="rang-badge
+              {% if forloop.counter == 1 %}bg-danger text-white
+              {% elif forloop.counter == 2 %}bg-warning text-dark
+              {% elif forloop.counter == 3 %}bg-secondary text-white
+              {% else %}bg-light text-muted{% endif %}">
+              {{ forloop.counter }}
+            </div>
+          </td>
+
+          <td>
+            <div class="fw-bold" style="font-size:14px">{{ row.client.nom }}</div>
+            <div class="text-muted" style="font-size:11px">
+              <i class="bi bi-phone me-1"></i>{{ row.client.telephone }}
+            </div>
+          </td>
+
+          <td class="text-end" style="font-size:13px">{{ row.total_ach|floatformat:0 }} GNF</td>
+
+          <td class="text-end text-success fw-semibold" style="font-size:13px">
+            {{ row.total_paye|floatformat:0 }} GNF
+          </td>
+
+          <td class="text-end">
+            {% if row.dette <= 0 %}
+              <span class="text-success fw-bold">
+                <i class="bi bi-check-circle me-1"></i>Soldé
+              </span>
+            {% else %}
+              <div class="fw-bold fs-6 {% if row.alerte %}text-danger{% else %}text-warning{% endif %}">
+                {{ row.dette|floatformat:0 }} GNF
+              </div>
+              {% if row.alerte %}
+              <div style="font-size:10px;color:#c0392b;font-weight:600">
+                <i class="bi bi-exclamation-triangle me-1"></i>LIMITE DÉPASSÉE
+              </div>
+              {% endif %}
+            {% endif %}
+          </td>
+
+          <td>
+            {% if row.limite > 0 %}
+            <div class="d-flex justify-content-between mb-1">
+              <span style="font-size:10px;color:#6c757d">{{ row.pct_limite }}%</span>
+              <span style="font-size:10px;color:#6c757d">{{ row.limite|floatformat:0 }}</span>
+            </div>
+            <div class="dette-bar">
+              <div class="dette-fill {% if row.pct_limite >= 100 %}bg-danger{% elif row.pct_limite >= 80 %}bg-warning{% else %}bg-success{% endif %}"
+                   data-bsg-width="{{ row.pct_limite }}%">
+              </div>
+            </div>
+            {% else %}
+            <span class="text-muted" style="font-size:11px">Illimitée</span>
+            {% endif %}
+          </td>
+
+          <td><span class="score-badge score-{{ row.score }}">{{ row.score }}</span></td>
+
+          <td class="text-center">
+            {% if row.nb_impayes > 0 %}
+            <a href="{% url 'web:client_impayes' row.client.pk %}"
+               class="badge bg-danger text-white text-decoration-none"
+               style="font-size:11px;padding:5px 10px;border-radius:8px">
+              {{ row.nb_impayes }} cmd
+            </a>
+            {% else %}
+            <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+
+          <td>
+            <div class="d-flex gap-1">
+              <a href="{% url 'web:client_detail' row.client.pk %}"
+                 class="btn btn-sm btn-outline-primary" title="Fiche client">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a href="{% url 'web:client_whatsapp' row.client.pk %}"
+                 class="btn btn-sm btn-outline-success" title="Relance WhatsApp"
+                 target="_blank" rel="noopener">
+                <i class="bi bi-whatsapp"></i>
+              </a>
+            </div>
+          </td>
+
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" class="text-center py-5">
+            <i class="bi bi-check-circle" style="font-size:2.5rem;color:#1e8449;opacity:.5"></i>
+            <p class="mt-2 mb-0 fw-bold text-success">Aucune dette pour ce filtre ✓</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      {% if rows %}
+      <tfoot class="table-light">
+        <tr>
+          <td colspan="4" class="text-end fw-bold">TOTAL DES DETTES</td>
+          <td class="text-end fw-bold fs-5 text-danger">{{ total_dettes|floatformat:0 }} GNF</td>
+          <td colspan="4"></td>
+        </tr>
+      </tfoot>
+      {% endif %}
+    </table>
+  </div>
+</div>
+
+<!-- Graphique top débiteurs -->
+{% if rows %}
+<div class="card border-0 shadow-sm" style="border-radius:14px">
+  <div class="card-body p-4">
+    <h6 class="fw-bold mb-1">
+      <i class="bi bi-bar-chart me-2 text-muted"></i>Top Débiteurs
+    </h6>
+    <p class="text-muted mb-3" style="font-size:12px">
+      Barre rouge = limite dépassée · Ligne pointillée = limite crédit
+    </p>
+    <canvas id="chartDettes" height="65"></canvas>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+{% if rows %}
+{{ labels_json|json_script:"labels-data" }}
+{{ dettes_json|json_script:"dettes-data" }}
+{{ limites_json|json_script:"limites-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+const labels  = JSON.parse(document.getElementById('labels-data').textContent);
+const dettes  = JSON.parse(document.getElementById('dettes-data').textContent);
+const limites = JSON.parse(document.getElementById('limites-data').textContent);
+const bgColors = dettes.map((d,i) =>
+  (limites[i] > 0 && d > limites[i]) ? 'rgba(192,57,43,.8)' : 'rgba(230,126,34,.75)'
+);
+
+new Chart(document.getElementById('chartDettes'), {
+  data: {
+    labels,
+    datasets: [
+      {
+        type: 'bar',
+        label: 'Dette (GNF)',
+        data: dettes,
+        backgroundColor: bgColors,
+        borderRadius: 6,
+        borderSkipped: false,
+        order: 2,
+      },
+      {
+        type: 'line',
+        label: 'Limite crédit (GNF)',
+        data: limites,
+        borderColor: 'rgba(26,58,92,.6)',
+        borderDash: [6,3],
+        borderWidth: 2,
+        pointRadius: 5,
+        pointBackgroundColor: '#1a3a5c',
+        fill: false,
+        order: 1,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position:'top', labels:{ font:{ size:12 } } },
+      tooltip: {
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString('fr')} GNF`
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: v => v >= 1000000 ? (v/1000000).toFixed(1)+'M'
+                       : v >= 1000    ? (v/1000).toFixed(0)+'K' : v
+        },
+        grid: { color:'rgba(0,0,0,.04)' }
+      },
+      x: { grid:{ display:false } }
+    }
+  }
+});
+</script>
+{% endif %}
+{% endblock %}

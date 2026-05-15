@@ -1,0 +1,43 @@
+{% extends 'web/base.html' %}
+{% load humanize %}
+{% block title %}Score Risque Clients{% endblock %}
+{% block page_title %}🎯 Score Risque Clients IA{% endblock %}
+{% block content %}
+{% if erreur %}<div class="alert alert-warning mb-3" style="border-radius:12px"><i class="bi bi-exclamation-triangle me-2"></i>{{ erreur }}</div>{% endif %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3"><div class="kpi-card text-center"><div class="kpi-label">Analysés</div><div class="kpi-val">{{ resultats|length }}</div></div></div>
+  <div class="col-6 col-md-3"><div class="kpi-card text-center border-danger-bsg"><div class="kpi-label color-danger">Risque élevé</div><div class="kpi-val color-danger">{{ risque_eleve|length }}</div></div></div>
+  <div class="col-6 col-md-3"><div class="kpi-card text-center border-warning-bsg"><div class="kpi-label color-warning">Risque moyen</div><div class="kpi-val color-warning">{{ risque_moyen|length }}</div></div></div>
+  <div class="col-6 col-md-3"><div class="kpi-card text-center border-success-bsg"><div class="kpi-label color-success">Bons clients</div><div class="kpi-val color-success">{{ bons|length }}</div></div></div>
+</div>
+<div class="table-card mb-3">
+  <div class="table-card-header"><h6><i class="bi bi-table me-2 text-muted"></i>Score IA par client</h6><a href="{% url 'web:rapport_dettes' %}" class="btn btn-sm btn-outline-secondary">Rapport dettes →</a></div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead><tr><th>Client</th><th class="text-center">Score /100</th><th style="width:180px">Niveau</th><th class="text-end">Dette</th><th>Conseil IA</th><th></th></tr></thead>
+      <tbody>
+        {% for r in resultats %}
+        <tr class="{% if r.score < 31 %}table-danger{% elif r.score < 61 %}table-warning{% endif %}">
+          <td><div class="fw-bold" style="font-size:13px">{{ r.nom }}</div><div class="text-muted" style="font-size:11px">{{ r.telephone }}</div></td>
+          <td class="text-center">
+            <div class="risk-score-circle risk-score-{{ r.niveau|slugify }}">
+              {{ r.score }}
+            </div>
+          </td>
+          <td>
+            <div style="height:7px;background:#e9ecef;border-radius:4px;overflow:hidden;margin-bottom:4px">
+              <div class="risk-fill-{{ r.niveau|slugify }}" style="height:100%; border-radius:4px" data-bsg-width="{{ r.score }}%"></div>
+            </div>
+            <span class="risk-text-{{ r.niveau|slugify }}" style="font-size:11px; font-weight:700">{{ r.niveau }}</span>
+          </td>
+          <td class="text-end fw-bold {% if r.dette > 0 %}text-danger{% else %}text-success{% endif %}" style="font-size:13px">{{ r.dette|floatformat:0 }} GNF</td>
+          <td style="font-size:12px;color:#6c757d">{{ r.conseil }}</td>
+          <td><div class="d-flex gap-1"><a href="{% url 'web:client_detail' r.client_id %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a><a href="{% url 'web:client_whatsapp' r.client_id %}" class="btn btn-sm btn-outline-success" target="_blank"><i class="bi bi-whatsapp"></i></a></div></td>
+        </tr>
+        {% empty %}<tr><td colspan="6" class="text-center text-muted py-4">Aucun client.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="card border-0" style="border-radius:12px;background:#f8f9fa"><div class="card-body p-3" style="font-size:12px;color:#6c757d"><strong>Score :</strong> 0–30 = Bloquer crédit · 31–60 = Surveiller · 61–85 = Normal · 86–100 = Excellent.</div></div>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends 'web/base.html' %}
+{% block title %}Logs Connexion{% endblock %}
+{% block page_title %}🔐 Logs de Connexion{% endblock %}
+
+{% block content %}
+
+<!-- KPIs -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Total (200 derniers)</div>
+      <div class="kpi-val">{{ logs|length }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Connexions réussies</div>
+      <div class="kpi-val text-success">{{ nb_succes }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Tentatives échouées</div>
+      <div class="kpi-val text-danger">{{ nb_echecs }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">IPs suspectes</div>
+      <div class="kpi-val" style="color:#e67e22">{{ ips_suspectes|length }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- IPs suspectes -->
+{% if ips_suspectes %}
+<div class="card border-0 shadow-sm mb-4" style="border-radius:14px;border-left:4px solid #c0392b !important">
+  <div class="card-body p-4">
+    <h6 class="fw-bold text-danger mb-3">
+      <i class="bi bi-exclamation-triangle me-2"></i>IPs avec plusieurs échecs
+    </h6>
+    <div class="d-flex flex-wrap gap-2">
+      {% for ip, nb in ips_suspectes %}
+      <span class="badge bg-danger bg-opacity-15 text-danger px-3 py-2" style="font-size:12px;border-radius:8px">
+        <i class="bi bi-geo-alt me-1"></i>{{ ip }} — {{ nb }} tentative{{ nb|pluralize }}
+      </span>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Tableau logs -->
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead>
+        <tr>
+          <th>Statut</th>
+          <th>Utilisateur / Email</th>
+          <th>Appareil</th>
+          <th>Adresse IP</th>
+          <th>Date & Heure</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr class="{% if not log.succes %}table-danger{% endif %}">
+          <td>
+            {% if log.succes %}
+            <span class="badge bg-success bg-opacity-15 text-success" style="font-size:11px">
+              <i class="bi bi-check-circle me-1"></i>Succès
+            </span>
+            {% else %}
+            <span class="badge bg-danger bg-opacity-15 text-danger" style="font-size:11px">
+              <i class="bi bi-x-circle me-1"></i>Échec
+            </span>
+            {% endif %}
+          </td>
+          <td>
+            {% if log.utilisateur %}
+            <div class="fw-semibold" style="font-size:13px">{{ log.utilisateur.nom }}</div>
+            <div class="text-muted" style="font-size:11px">{{ log.email_tente }}</div>
+            {% else %}
+            <div class="text-muted" style="font-size:12px;font-family:monospace">{{ log.email_tente }}</div>
+            {% endif %}
+          </td>
+          <td style="font-size:13px">{{ log.device_court }}</td>
+          <td style="font-family:monospace;font-size:12px">{{ log.ip|default:"—" }}</td>
+          <td style="font-size:12px;color:#6c757d">{{ log.date|date:"d M Y H:i:s" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center text-muted py-5">
+            <i class="bi bi-journal-x" style="font-size:2.5rem;opacity:.3"></i>
+            <p class="mt-2 mb-0">Aucun log disponible — les connexions seront enregistrées ici.</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

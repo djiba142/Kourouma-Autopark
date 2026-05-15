@@ -1,0 +1,268 @@
+{% extends 'web/base.html' %}
+{% load static %}
+{% block title %}Vente directe{% endblock %}
+{% block page_title %}Vente au Comptoir{% endblock %}
+
+{% block extra_css %}
+<style>
+  .produit-result { cursor:pointer; border-radius:8px; transition:background .12s; }
+  .produit-result:hover { background:#f0f4ff; }
+  #results-dropdown { position:absolute; z-index:200; width:100%;
+    background:#fff; border:1px solid #dee2e6; border-radius:8px;
+    box-shadow:0 4px 16px rgba(0,0,0,.1); max-height:320px; overflow-y:auto; }
+  .cart-item { background:#fff; border:1px solid #e9ecef; border-radius:10px; }
+  .total-box { background:#1a3a5c; color:#fff; border-radius:14px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<form method="post" action="{% url 'web:vente_directe' %}" id="venteForm">
+{% csrf_token %}
+
+<div class="row g-3">
+
+  <!-- ── Colonne gauche : recherche + panier ── -->
+  <div class="col-lg-7">
+
+    <!-- Client -->
+    <div class="card border-0 shadow-sm mb-3" style="border-radius:12px">
+      <div class="card-body">
+        <label class="form-label fw-bold mb-2"><i class="bi bi-person me-1"></i>Client (optionnel)</label>
+        <select name="client_id" class="form-select">
+          <option value="">— Vente comptoir sans client —</option>
+          {% for c in clients %}
+          <option value="{{ c.pk }}" {% if c.alerte_credit %}style="color:red"{% endif %}>
+            {{ c.nom }} — {{ c.telephone }}
+            {% if c.alerte_credit %} ⚠ Crédit dépassé{% endif %}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Recherche produit (HTMX) -->
+    <div class="card border-0 shadow-sm mb-3" style="border-radius:12px">
+      <div class="card-body">
+        <label class="form-label fw-bold"><i class="bi bi-search me-1"></i>Ajouter un produit</label>
+        <div class="position-relative">
+          <div class="input-group">
+            <input type="text" id="searchInput" class="form-control"
+                   placeholder="Nom ou référence..."
+                   hx-get="{% url 'web:produit_search' %}"
+                   hx-trigger="keyup changed delay:350ms"
+                   hx-target="#results-dropdown"
+                   hx-include="#searchInput"
+                   name="q"
+                   autocomplete="off"
+                   style="border-radius:10px 0 0 10px">
+            <button type="button" onclick="BSGScanner.open()"
+                    class="btn btn-outline-secondary"
+                    style="border-radius:0 10px 10px 0">
+              <i class="bi bi-upc-scan"></i> Scanner
+            </button>
+          </div>
+          <div id="results-dropdown"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panier -->
+    <div class="card border-0 shadow-sm" style="border-radius:12px">
+      <div class="card-header bg-white border-0 pt-3 pb-0">
+        <h6 class="fw-bold mb-0"><i class="bi bi-cart3 me-2"></i>Panier <span id="nb-articles" class="badge bg-secondary">0</span></h6>
+      </div>
+      <div class="card-body p-2" id="panier-container">
+        <div id="panier-vide" class="text-center text-muted py-4">
+          <i class="bi bi-cart-x" style="font-size:2.5rem;opacity:.3"></i>
+          <p class="mt-2 mb-0" style="font-size:13px">Recherchez un produit pour démarrer</p>
+        </div>
+        <div id="panier-lignes"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Colonne droite : totaux + paiement ── -->
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm sticky-top" style="border-radius:12px;top:80px">
+      <div class="card-body">
+
+        <h6 class="fw-bold mb-3">Récapitulatif</h6>
+
+        <div class="d-flex justify-content-between mb-1">
+          <span class="text-muted" style="font-size:13px">Sous-total</span>
+          <span id="disp-brut">0 GNF</span>
+        </div>
+
+        <!-- Remise -->
+        <div class="mb-2">
+          <label class="form-label mb-1" style="font-size:12px">Remise</label>
+          <div class="input-group input-group-sm">
+            <input type="number" name="remise" id="remiseVal" value="0" min="0"
+                   class="form-control" onchange="recalcul()">
+            <select name="type_remise" id="typeRemise" class="form-select" onchange="recalcul()">
+              <option value="POURCENT">%</option>
+              <option value="FIXE">GNF</option>
+            </select>
+          </div>
+        </div>
+
+        <hr>
+        <div class="d-flex justify-content-between mb-3">
+          <span class="fw-bold">Total NET</span>
+          <span class="fw-bold fs-5" id="disp-total" style="color:#1a3a5c">0 GNF</span>
+        </div>
+
+        <!-- Paiement -->
+        <div class="mb-3">
+          <label class="fw-bold mb-2 d-block" style="font-size:13px">Mode de règlement</label>
+          <div class="d-flex gap-2">
+            <div class="flex-fill">
+              <input type="radio" class="btn-check" name="mode_paiement" id="mode_CASH" value="CASH" checked>
+              <label class="btn btn-outline-secondary w-100 py-2" for="mode_CASH" style="font-size:12px">
+                <i class="bi bi-cash"></i><br>Espèces
+              </label>
+            </div>
+            <div class="flex-fill">
+              <input type="radio" class="btn-check" name="mode_paiement" id="mode_MOBILE" value="MOBILE_MONEY">
+              <label class="btn btn-outline-secondary w-100 py-2" for="mode_MOBILE" style="font-size:12px">
+                <i class="bi bi-phone"></i><br>Mobile Money
+              </label>
+            </div>
+            <div class="flex-fill">
+              <input type="radio" class="btn-check" name="mode_paiement" id="mode_VIREMENT" value="VIREMENT">
+              <label class="btn btn-outline-secondary w-100 py-2" for="mode_VIREMENT" style="font-size:12px">
+                <i class="bi bi-bank"></i><br>Virement
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" style="font-size:12px;font-weight:600">Montant versé (GNF)</label>
+          <input type="number" name="montant_paye" id="montantPaye"
+                 class="form-control fw-bold" style="font-size:1.1rem" min="0"
+                 placeholder="0" onchange="recalcul()">
+          <div id="reste-info" class="mt-1 text-muted" style="font-size:12px"></div>
+        </div>
+
+        <button type="submit" id="btnValider"
+                class="btn w-100 fw-bold py-3"
+                style="background:#e8593c;color:#fff;border-radius:10px;font-size:15px" disabled>
+          <i class="bi bi-check-circle me-2"></i>ENREGISTRER LA VENTE
+        </button>
+        <p class="text-muted text-center mt-2 mb-0" style="font-size:11px">
+          Stock déduit et journal mis à jour automatiquement
+        </p>
+
+      </div>
+    </div>
+  </div>
+</div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Panier JS ─────────────────────────────────────────────────────────────
+const panier = {};
+
+function fmt(n) { return Number(n).toLocaleString('fr') + ' GNF'; }
+
+function recalcul() {
+  let brut = 0;
+  Object.values(panier).forEach(p => brut += p.prix * p.qte);
+
+  const remise = parseFloat(document.getElementById('remiseVal').value) || 0;
+  const type   = document.getElementById('typeRemise').value;
+  let net = type === 'POURCENT' ? brut * (1 - remise/100) : brut - remise;
+  if (net < 0) net = 0;
+
+  document.getElementById('disp-brut').textContent  = fmt(brut);
+  document.getElementById('disp-total').textContent = fmt(net);
+
+  const paye = parseFloat(document.getElementById('montantPaye').value) || 0;
+  const reste = net - paye;
+  const el    = document.getElementById('reste-info');
+  if (paye > 0) {
+    el.textContent = reste > 0 ? `Reste dû : ${fmt(reste)}` : 'Paiement complet ✅';
+    el.style.color = reste > 0 ? '#e67e22' : '#27ae60';
+  } else { el.textContent = ''; }
+
+  document.getElementById('btnValider').disabled = Object.keys(panier).length === 0;
+}
+
+function renderPanier() {
+  const container = document.getElementById('panier-lignes');
+  const vide      = document.getElementById('panier-vide');
+  const nb        = Object.keys(panier).length;
+  document.getElementById('nb-articles').textContent = nb;
+
+  if (nb === 0) { vide.style.display='block'; container.innerHTML=''; recalcul(); return; }
+  vide.style.display = 'none';
+
+  container.innerHTML = Object.entries(panier).map(([id, p]) => `
+    <div class="cart-item p-3 mb-2">
+      <div class="d-flex align-items-start justify-content-between">
+        <div>
+          <div class="fw-bold" style="font-size:14px">${p.nom}</div>
+          <div class="text-muted" style="font-size:11px">Réf: ${p.ref} · ${fmt(p.prix)}/u</div>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="retirerProduit('${id}')">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+      <div class="d-flex align-items-center justify-content-between mt-2">
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeQte('${id}', -1)">−</button>
+          <span class="fw-bold">${p.qte}</span>
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeQte('${id}', +1)">+</button>
+          <span class="text-muted" style="font-size:11px">/ ${p.stock} dispo</span>
+        </div>
+        <span class="fw-bold" style="color:#1a3a5c">${fmt(p.prix * p.qte)}</span>
+      </div>
+      <input type="hidden" name="produit_id" value="${id}">
+      <input type="hidden" name="quantite" id="qte_${id}" value="${p.qte}">
+      <input type="hidden" name="prix_unitaire" value="${p.prix}">
+    </div>`).join('');
+
+  recalcul();
+}
+
+window.ajouterProduit = function(id, nom, ref, prix, stock) {
+  if (panier[id]) { panier[id].qte = Math.min(panier[id].qte + 1, stock); }
+  else { panier[id] = {nom, ref, prix: parseFloat(prix), qte: 1, stock: parseInt(stock)}; }
+  document.getElementById('results-dropdown').innerHTML = '';
+  document.getElementById('searchInput').value = '';
+  renderPanier();
+}
+
+window.retirerProduit = function(id) { delete panier[id]; renderPanier(); }
+
+window.changeQte = function(id, delta) {
+  const p = panier[id];
+  const nv = p.qte + delta;
+  if (nv <= 0) { delete panier[id]; }
+  else if (nv <= p.stock) { p.qte = nv; }
+  renderPanier();
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#results-dropdown') && !e.target.closest('#searchInput')) {
+    document.getElementById('results-dropdown').innerHTML = '';
+  }
+});
+</script>
+
+<script src="{% static 'web/js/scanner.js' %}"></script>
+<script>
+BSGScanner.init({
+  onScan: code => {
+    const input = document.getElementById('searchInput');
+    input.value = code;
+    // Déclencher HTMX manuellement pour la recherche
+    htmx.trigger(input, 'keyup');
+  }
+});
+</script>
+{% endblock %}

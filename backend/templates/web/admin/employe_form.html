@@ -1,0 +1,207 @@
+{% extends 'web/base.html' %}
+{% block title %}Créer un accès{% endblock %}
+{% block page_title %}Créer un accès employé{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm" style="border-radius:16px">
+      <div class="card-body p-4">
+
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <div style="width:44px;height:44px;border-radius:12px;background:#1a3a5c;
+                      display:flex;align-items:center;justify-content:center">
+            <i class="bi bi-person-plus text-white" style="font-size:20px"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-0">Nouvel accès BSG</h5>
+            <p class="text-muted mb-0" style="font-size:12px">
+              Le compte sera actif immédiatement après création.
+            </p>
+          </div>
+        </div>
+
+        <form method="post" action="{% url 'web:employe_nouveau' %}">
+          {% csrf_token %}
+
+          <!-- Nom -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nom complet *</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0">
+                <i class="bi bi-person text-muted"></i>
+              </span>
+              <input type="text" name="nom" class="form-control border-start-0"
+                     placeholder="Ex : Fatoumata Camara"
+                     value="{{ form_data.nom|default:'' }}" required>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Adresse email *</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0">
+                <i class="bi bi-envelope text-muted"></i>
+              </span>
+              <input type="email" name="email" class="form-control border-start-0"
+                     placeholder="employe@bsg.com"
+                     value="{{ form_data.email|default:'' }}" required>
+            </div>
+            <div class="form-text">Utilisé pour se connecter au tableau de bord.</div>
+          </div>
+
+          <!-- Téléphone -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Numéro de téléphone</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0">
+                <i class="bi bi-telephone text-muted"></i>
+              </span>
+              <input type="text" name="telephone" class="form-control border-start-0"
+                     placeholder="+224 ..."
+                     value="{{ form_data.telephone|default:'' }}">
+            </div>
+          </div>
+
+          <!-- Mot de passe -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Mot de passe *</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0">
+                  <i class="bi bi-lock text-muted"></i>
+                </span>
+                <input type="password" name="password" id="pwd1"
+                       class="form-control border-start-0 border-end-0"
+                       placeholder="Min. 8 caractères" required minlength="8">
+                <button type="button" class="input-group-text bg-light border-start-0"
+                        onclick="toggle('pwd1',this)">
+                  <i class="bi bi-eye text-muted" style="font-size:14px"></i>
+                </button>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Confirmer *</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0">
+                  <i class="bi bi-lock-fill text-muted"></i>
+                </span>
+                <input type="password" name="password_confirm" id="pwd2"
+                       class="form-control border-start-0 border-end-0"
+                       placeholder="Répéter" required minlength="8"
+                       oninput="checkMatch()">
+                <button type="button" class="input-group-text bg-light border-start-0"
+                        onclick="toggle('pwd2',this)">
+                  <i class="bi bi-eye text-muted" style="font-size:14px"></i>
+                </button>
+              </div>
+              <div id="match-msg" class="form-text"></div>
+            </div>
+          </div>
+
+          <!-- Rôle -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Rôle *</label>
+            <div class="row g-2">
+
+              <div class="col-4">
+                <input type="radio" class="btn-check" name="role"
+                       id="r_employe" value="EMPLOYE"
+                       {% if form_data.role == 'EMPLOYE' or not form_data %}checked{% endif %}>
+                <label class="btn btn-outline-primary w-100 py-3" for="r_employe">
+                  <i class="bi bi-person-badge d-block mb-1" style="font-size:22px"></i>
+                  <strong style="font-size:12px">Employé</strong>
+                  <div class="text-muted" style="font-size:10px;margin-top:2px">
+                    Ventes · Clients
+                  </div>
+                </label>
+              </div>
+
+              <div class="col-4">
+                <input type="radio" class="btn-check" name="role"
+                       id="r_magasinier" value="MAGASINIER"
+                       {% if form_data.role == 'MAGASINIER' %}checked{% endif %}>
+                <label class="btn btn-outline-secondary w-100 py-3" for="r_magasinier">
+                  <i class="bi bi-boxes d-block mb-1" style="font-size:22px"></i>
+                  <strong style="font-size:12px">Magasinier</strong>
+                  <div class="text-muted" style="font-size:10px;margin-top:2px">
+                    Stock · Transferts
+                  </div>
+                </label>
+              </div>
+
+              <div class="col-4">
+                <input type="radio" class="btn-check" name="role"
+                       id="r_admin" value="ADMIN"
+                       {% if form_data.role == 'ADMIN' %}checked{% endif %}>
+                <label class="btn btn-outline-danger w-100 py-3" for="r_admin">
+                  <i class="bi bi-shield-fill d-block mb-1" style="font-size:22px"></i>
+                  <strong style="font-size:12px">Admin</strong>
+                  <div class="text-muted" style="font-size:10px;margin-top:2px">
+                    Accès complet
+                  </div>
+                </label>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Permissions rapides par rôle (info) -->
+          <div class="alert alert-light border py-2 px-3 mb-4" style="font-size:12px">
+            <strong>Permissions :</strong>
+            <span id="perm-employe">Ventes, Clients, Dépenses professionnelles</span>
+            <span id="perm-magasinier" style="display:none">Stock, Transferts, Fournisseurs, Achats</span>
+            <span id="perm-admin" style="display:none">Tout — Finances perso/pro, Utilisateurs, Audit, Rapports</span>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn fw-bold px-4 py-2"
+                    style="background:#1a3a5c;color:#fff;border-radius:10px">
+              <i class="bi bi-check-circle me-2"></i>Créer le compte
+            </button>
+            <a href="{% url 'web:employes_liste' %}"
+               class="btn btn-outline-secondary px-4 py-2" style="border-radius:10px">
+              Annuler
+            </a>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggle(id, btn) {
+  const f = document.getElementById(id);
+  f.type = f.type === 'password' ? 'text' : 'password';
+}
+
+function checkMatch() {
+  const p1  = document.getElementById('pwd1').value;
+  const p2  = document.getElementById('pwd2').value;
+  const msg = document.getElementById('match-msg');
+  if (!p2) { msg.textContent = ''; return; }
+  if (p1 === p2) {
+    msg.textContent = '✓ Les mots de passe correspondent';
+    msg.style.color = '#1e8449';
+  } else {
+    msg.textContent = '✗ Les mots de passe sont différents';
+    msg.style.color = '#c0392b';
+  }
+}
+
+// Afficher les permissions selon le rôle sélectionné
+document.querySelectorAll('input[name="role"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    document.getElementById('perm-employe').style.display    = 'none';
+    document.getElementById('perm-magasinier').style.display = 'none';
+    document.getElementById('perm-admin').style.display      = 'none';
+    document.getElementById('perm-' + radio.value.toLowerCase()).style.display = 'inline';
+  });
+});
+</script>
+{% endblock %}

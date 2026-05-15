@@ -1,0 +1,58 @@
+{% extends 'web/base.html' %}
+{% load humanize %}
+{% block title %}Dépenses{% endblock %}
+{% block page_title %}Dépenses{% endblock %}
+
+{% block content %}
+<!-- KPI total -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="kpi-card d-flex align-items-center gap-3">
+      <div class="kpi-icon" style="background:#fce8e8">
+        <i class="bi bi-cash-stack" style="color:#c0392b;font-size:20px"></i>
+      </div>
+      <div>
+        <div class="kpi-label">Total dépenses</div>
+        <div class="kpi-value" style="color:#c0392b">{{ total|intcomma }} GNF</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8 d-flex align-items-center justify-content-end">
+    <a href="{% url 'web:depenses_nouvelle' %}" class="btn fw-bold" style="background:#e8593c;color:#fff;border-radius:10px">
+      <i class="bi bi-plus-circle me-2"></i>Nouvelle dépense
+    </a>
+  </div>
+</div>
+
+<!-- Tableau -->
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Date</th><th>Description</th><th>Catégorie</th>
+          <th>Type</th><th class="text-end">Montant</th><th>Par</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in depenses %}
+        <tr>
+          <td style="font-size:12px;color:#6c757d">{{ d.date_depense|date:"d M Y" }}</td>
+          <td class="fw-semibold" style="font-size:13px">{{ d.description }}</td>
+          <td>
+            <span class="badge bg-secondary bg-opacity-15 text-secondary" style="font-size:10px">
+              {{ d.categorie.nom|default:"—" }}
+            </span>
+          </td>
+          <td style="font-size:12px">{{ d.get_type_depense_display }}</td>
+          <td class="text-end fw-bold text-danger">{{ d.montant_gnf|intcomma }} GNF</td>
+          <td style="font-size:12px;color:#6c757d">{{ d.cree_par.nom|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-5">Aucune dépense enregistrée</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

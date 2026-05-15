@@ -1,0 +1,336 @@
+{% extends 'web/base.html' %}
+{% load humanize %}
+{% block title %}Tableau de Bord — Admin{% endblock %}
+{% block page_title %}Tableau de Bord Administratif{% endblock %}
+
+{% block extra_css %}
+<style>
+  .card-stats { border: none; border-radius: 16px; transition: transform 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+  .card-stats:hover { transform: translateY(-5px); }
+  .icon-box { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+  .chart-container { position: relative; height: 300px; width: 100%; }
+  .alert-item { padding: 12px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid transparent; background: #fff; border: 1px solid #eee; }
+  .alert-critical { border-left-color: #e74c3c; background: #fff5f5; }
+  .alert-warning { border-left-color: #f39c12; background: #fff9f0; }
+  .table-modern thead th { background: #f8f9fa; border: none; font-size: 11px; text-transform: uppercase; color: #7f8c8d; }
+  .badge-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .bg-profit { background: linear-gradient(135deg, #1e8449 0%, #2ecc71 100%); color: white; }
+  .bg-ventes { background: linear-gradient(135deg, #1a6eb5 0%, #3498db 100%); color: white; }
+  .bg-depenses { background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%); color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── KPIs SUPÉRIEURS ── -->
+<div class="row g-3 mb-4">
+  {% if is_admin %}
+  <div class="col-md-3">
+    <div class="card card-stats p-3 bg-ventes">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="opacity-75 small fw-bold">ENCAISSEMENTS (MOIS)</div>
+          <div class="fs-4 fw-bold mt-1">{{ total_paiements_mois|default:0|intcomma }} <small style="font-size: 12px;">GNF</small></div>
+        </div>
+        <i class="bi bi-wallet2 fs-1 opacity-25"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card card-stats p-3 bg-depenses">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="opacity-75 small fw-bold">DÉPENSES (MOIS)</div>
+          <div class="fs-4 fw-bold mt-1">{{ total_depenses_mois|default:0|intcomma }} <small style="font-size: 12px;">GNF</small></div>
+        </div>
+        <i class="bi bi-cart-dash fs-1 opacity-25"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card card-stats p-3 bg-profit">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="opacity-75 small fw-bold">PROFIT NET (MOIS)</div>
+          <div class="fs-4 fw-bold mt-1">{{ profit_mois|default:0|intcomma }} <small style="font-size: 12px;">GNF</small></div>
+        </div>
+        <i class="bi bi-graph-up-arrow fs-1 opacity-25"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card card-stats p-3 bg-white border border-warning" style="border-left: 5px solid #f39c12 !important;">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="text-warning small fw-bold">DETTES CLIENTS</div>
+          <div class="fs-4 fw-bold mt-1 text-dark">{{ total_dettes|default:0|intcomma }} <small style="font-size: 12px;">GNF</small></div>
+        </div>
+        <i class="bi bi-person-exclamation fs-1 text-warning opacity-50"></i>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<div class="row g-4">
+  <!-- ── COLONNE GAUCHE : GRAPH ET TABLES ── -->
+  <div class="col-lg-8">
+    
+    <!-- Graphique des tendances -->
+    <div class="card card-stats mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h6 class="fw-bold mb-0 text-primary">Tendance Flux Financiers (15 jours)</h6>
+          <div class="dropdown">
+            <button class="btn btn-sm btn-light border dropdown-toggle" data-bs-toggle="dropdown">Exporter</button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">PDF Report</a></li>
+              <li><a class="dropdown-item" href="#">Excel Data</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="financeChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Journal Financier Récent -->
+    <div class="card card-stats">
+      <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0"><i class="bi bi-journal-text me-2 text-muted"></i>Journal des opérations récentes</h6>
+        <a href="{% url 'web:finances_liste' %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Journal complet</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover table-modern align-middle">
+          <thead>
+            <tr>
+              <th class="ps-4">Opération</th>
+              <th>Référence</th>
+              <th>Montant (GNF)</th>
+              <th>Utilisateur</th>
+              <th class="pe-4 text-end">Date/Heure</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for op in journal_recent %}
+            <tr>
+              <td class="ps-4">
+                <span class="badge {% if op.type_flux == 'ENTREE' %}bg-success{% else %}bg-danger{% endif %} rounded-pill me-2" style="font-size: 10px;">{{ op.type_flux }}</span>
+                <span class="fw-medium">{{ op.get_type_operation_display }}</span>
+              </td>
+              <td class="text-muted small fw-bold">{{ op.reference_doc }}</td>
+              <td class="fw-bold {% if op.type_flux == 'ENTREE' %}text-success{% else %}text-danger{% endif %}">
+                {% if op.type_flux == 'ENTREE' %}+{% else %}-{% endif %}{{ op.montant_gnf|intcomma }}
+              </td>
+              <td><span class="small">{{ op.utilisateur.nom }}</span></td>
+              <td class="pe-4 text-end small text-muted">{{ op.created_at|date:"d/m H:i" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center py-5 text-muted">Aucune opération aujourd'hui</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── COLONNE DROITE : ALERTES ET INFOS ── -->
+  <div class="col-lg-4">
+    
+    <!-- Actions Rapides -->
+    <div class="card card-stats mb-4 bg-primary text-white">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3">Actions Directes</h6>
+        <div class="d-grid gap-2">
+          <a href="{% url 'web:vente_directe' %}" class="btn btn-light fw-bold text-primary">
+            <i class="bi bi-plus-circle me-2"></i>Nouvelle Vente
+          </a>
+          <div class="row g-2">
+            <div class="col-6">
+              <a href="{% url 'web:stock_entree' %}" class="btn btn-outline-light w-100 btn-sm">Stock +</a>
+            </div>
+            <div class="col-6">
+              <a href="{% url 'web:depenses_nouvelle' %}" class="btn btn-outline-light w-100 btn-sm">Dépense -</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alertes Critiques -->
+    <div class="mb-2 d-flex align-items-center justify-content-between">
+      <h6 class="fw-bold mb-0"><i class="bi bi-bell-fill text-danger me-2"></i>Alertes Critiques</h6>
+      <span class="badge bg-danger rounded-pill">{{ nb_alertes_stock|add:nb_ruptures }}</span>
+    </div>
+
+    <div class="alert-section">
+      {% if nb_ruptures > 0 %}
+      <div class="alert-item alert-critical">
+        <div class="d-flex align-items-start">
+          <i class="bi bi-slash-circle-fill text-danger fs-5 me-3"></i>
+          <div>
+            <div class="fw-bold text-danger">Ruptures de Stock</div>
+            <div class="small text-muted">{{ nb_ruptures }} produits sont épuisés dans vos boutiques.</div>
+            <a href="{% url 'web:stock_liste' %}?stock=zero" class="small fw-bold text-decoration-none mt-1 d-block">Réapprovisionner maintenant</a>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% for prod in produits_alerte %}
+      <div class="alert-item alert-warning">
+        <div class="d-flex align-items-start">
+          <i class="bi bi-exclamation-triangle-fill text-warning fs-5 me-3"></i>
+          <div>
+            <div class="fw-bold text-dark">{{ prod.nom }}</div>
+            <div class="small text-muted">Stock : <b>{{ prod.total_qty }}</b> (Seuil: {{ prod.seuil_alerte }})</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+      {% for client in top_debiteurs %}
+      <div class="alert-item border-left-primary bg-light">
+        <div class="d-flex align-items-start">
+          <i class="bi bi-person-dash text-primary fs-5 me-3"></i>
+          <div>
+            <div class="fw-bold">{{ client.nom }}</div>
+            <div class="small text-danger fw-bold">Dette: {{ client.total_dette|intcomma }} GNF</div>
+            <a href="{% url 'web:client_detail' client.pk %}" class="small text-muted">Voir les factures</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Stats Rapides -->
+    <div class="card card-stats mt-4 bg-light border-0">
+      <div class="card-body">
+        <h6 class="fw-bold small text-muted mb-3 text-uppercase">Statistiques Système</h6>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="small text-muted">Commandes (Jour)</span>
+          <span class="fw-bold">{{ nb_commandes_jour }}</span>
+        </div>
+        <div class="progress mb-3" style="height: 6px;">
+          <div class="progress-bar bg-primary" style="width: 75%"></div>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span class="small text-muted">Collecte Dettes</span>
+          <span class="fw-bold text-success">Low Risk</span>
+        </div>
+        <div class="progress" style="height: 6px;">
+          <div class="progress-bar bg-success" style="width: 85%"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctx = document.getElementById('financeChart').getContext('2d');
+  
+  // Gradient for Sales
+  const salesGradient = ctx.createLinearGradient(0, 0, 0, 300);
+  salesGradient.addColorStop(0, 'rgba(26, 110, 181, 0.4)');
+  salesGradient.addColorStop(1, 'rgba(26, 110, 181, 0)');
+
+  // Gradient for Expenses
+  const expensesGradient = ctx.createLinearGradient(0, 0, 0, 300);
+  expensesGradient.addColorStop(0, 'rgba(231, 76, 60, 0.4)');
+  expensesGradient.addColorStop(1, 'rgba(231, 76, 60, 0)');
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: JSON.parse('{{ chart_labels|escapejs }}'),
+      datasets: [
+        {
+          label: 'Encaissements',
+          data: JSON.parse('{{ chart_sales|escapejs }}'),
+          borderColor: '#1a6eb5',
+          backgroundColor: salesGradient,
+          fill: true,
+          tension: 0.4,
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: '#1a6eb5'
+        },
+        {
+          label: 'Dépenses',
+          data: JSON.parse('{{ chart_expenses|escapejs }}'),
+          borderColor: '#e74c3c',
+          backgroundColor: expensesGradient,
+          fill: true,
+          tension: 0.4,
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: '#e74c3c'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: {
+            usePointStyle: true,
+            padding: 20,
+            font: { weight: 'bold' }
+          }
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          padding: 12,
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          titleColor: '#2c3e50',
+          bodyColor: '#2c3e50',
+          borderColor: '#e9ecef',
+          borderWidth: 1,
+          boxPadding: 6,
+          bodyFont: { size: 13 },
+          callbacks: {
+            label: function(context) {
+              let label = context.dataset.label || '';
+              if (label) label += ': ';
+              label += new Intl.NumberFormat('fr-FR').format(context.parsed.y) + ' GNF';
+              return label;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: {
+            font: { size: 10 },
+            callback: function(value) {
+              return value.toLocaleString('fr-FR') + ' GNF';
+            }
+          }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 10 } }
+        }
+      },
+      interaction: {
+        intersect: false,
+        mode: 'index',
+      }
+    }
+  });
+</script>
+{% endblock %}
+

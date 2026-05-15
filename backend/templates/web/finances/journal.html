@@ -1,0 +1,162 @@
+{% extends 'web/base.html' %}
+{% load humanize %}
+{% block title %}Journal Financier{% endblock %}
+{% block page_title %}Journal Financier{% endblock %}
+
+{% block content %}
+<!-- Print Header (Hidden on screen) -->
+<div class="d-none d-print-block mb-4 border-bottom pb-3">
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <h2 class="fw-bold mb-0 text-primary">AutoPiecesPro</h2>
+      <p class="text-muted mb-0">Rapport Financier Périodique</p>
+      <p class="mb-0 fw-bold">Réf: {{ report_ref }}</p>
+    </div>
+    <div class="text-end">
+      <img src="{{ qr_url }}" alt="QR Code" width="100" height="100" class="border p-1 rounded">
+    </div>
+  </div>
+</div>
+
+<!-- KPIs -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="kpi-card d-flex align-items-center gap-3">
+      <div class="kpi-icon" style="background:#eafaf1"><i class="bi bi-arrow-down-circle" style="color:#1e8449;font-size:20px"></i></div>
+      <div><div class="kpi-label">Entrées Période</div>
+      <div class="kpi-value" style="color:#1e8449">{{ entrees|intcomma }} GNF</div></div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="kpi-card d-flex align-items-center gap-3">
+      <div class="kpi-icon" style="background:#fce8e8"><i class="bi bi-arrow-up-circle" style="color:#c0392b;font-size:20px"></i></div>
+      <div><div class="kpi-label">Sorties Période</div>
+      <div class="kpi-value" style="color:#c0392b">{{ sorties|intcomma }} GNF</div></div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="kpi-card d-flex align-items-center gap-3">
+      <div class="kpi-icon" style="background:#eef2ff"><i class="bi bi-graph-up" style="color:#1a3a5c;font-size:20px"></i></div>
+      <div><div class="kpi-label">Profit Période</div>
+      <div class="kpi-value fw-bold {% if profit >= 0 %}text-success{% else %}text-danger{% endif %}">{{ profit|intcomma }} GNF</div></div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="kpi-card d-flex align-items-center gap-3 bg-light border border-2 border-primary border-opacity-25">
+      <div class="kpi-icon bg-primary text-white"><i class="bi bi-wallet2" style="font-size:20px"></i></div>
+      <div><div class="kpi-label text-primary fw-bold">Solde Caisse Réel</div>
+      <div class="kpi-value fw-bold text-dark">{{ solde_caisse|intcomma }} GNF</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart -->
+<div class="card border-0 shadow-sm mb-4 d-print-none" style="border-radius:12px">
+  <div class="card-body">
+    <canvas id="financeChart" height="250"></canvas>
+  </div>
+</div>
+
+<!-- Filtres + export -->
+<div class="card border-0 shadow-sm mb-3 d-print-none" style="border-radius:12px">
+  <div class="card-body py-2">
+    <div class="d-flex align-items-center flex-wrap gap-2">
+      <a href="?periode=jour" class="btn btn-sm {% if periode == 'jour' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Aujourd'hui</a>
+      <a href="?periode=semaine" class="btn btn-sm {% if periode == 'semaine' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Semaine</a>
+      <a href="?periode=mois" class="btn btn-sm {% if periode == 'mois' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Mois</a>
+      <a href="?periode=trimestre" class="btn btn-sm {% if periode == 'trimestre' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Trimestre</a>
+      <a href="?periode=annee" class="btn btn-sm {% if periode == 'annee' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Année</a>
+      <a href="?periode=tout" class="btn btn-sm {% if periode == 'tout' %}btn-primary{% else %}btn-outline-secondary{% endif %}">Tout</a>
+      <div class="ms-auto">
+        <button onclick="window.print()" class="btn btn-sm btn-outline-secondary fw-bold me-2">
+          <i class="bi bi-printer me-1"></i>Imprimer
+        </button>
+        <a href="{% url 'web:export_journal' %}?periode={{ periode }}" class="btn btn-sm btn-outline-success fw-bold">
+          <i class="bi bi-file-earmark-excel me-1"></i>Export Excel
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr><th>N°</th><th>Type</th><th>Flux</th><th>Référence</th><th>Description</th><th class="text-end">Montant GNF</th><th>Date</th></tr>
+      </thead>
+      <tbody>
+        {% for e in ecritures %}
+        <tr>
+          <td style="font-family:monospace;font-size:11px">{{ e.numero }}</td>
+          <td><span class="badge bg-secondary bg-opacity-15 text-secondary" style="font-size:10px">{{ e.type_operation }}</span></td>
+          <td>
+            <span class="badge {% if e.type_flux == 'ENTREE' %}bg-success{% else %}bg-danger{% endif %} bg-opacity-15
+                         {% if e.type_flux == 'ENTREE' %}text-success{% else %}text-danger{% endif %}"
+                  style="font-size:10px">{{ e.type_flux }}</span>
+          </td>
+          <td style="font-family:monospace;font-size:11px">{{ e.reference_doc }}</td>
+          <td style="font-size:12px;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ e.description }}</td>
+          <td class="text-end fw-bold {% if e.type_flux == 'ENTREE' %}text-success{% else %}text-danger{% endif %}">
+            {% if e.type_flux == 'ENTREE' %}+{% else %}−{% endif %}{{ e.montant_gnf|intcomma }}
+          </td>
+          <td style="font-size:11px;color:#6c757d">{{ e.created_at|date:"d M H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center text-muted py-5">Aucune écriture pour cette période</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const canvas = document.getElementById('financeChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  const labels = JSON.parse('{{ chart_labels|escapejs }}');
+  const entreesData = JSON.parse('{{ chart_entrees|escapejs }}');
+  const sortiesData = JSON.parse('{{ chart_sorties|escapejs }}');
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Entrées',
+          data: entreesData,
+          backgroundColor: '#1e8449',
+          borderRadius: 4
+        },
+        {
+          label: 'Sorties',
+          data: sortiesData,
+          backgroundColor: '#c0392b',
+          borderRadius: 4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top' },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+        }
+      },
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+});
+</script>
+{% endblock %}

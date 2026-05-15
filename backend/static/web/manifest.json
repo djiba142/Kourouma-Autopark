@@ -1,0 +1,45 @@
+{
+  "name": "BSG Dashboard",
+  "short_name": "BSG",
+  "description": "Gestion commerciale intelligente — BSG",
+  "start_url": "/dashboard/",
+  "display": "standalone",
+  "background_color": "#1a3a5c",
+  "theme_color": "#1a3a5c",
+  "orientation": "any",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/static/web/img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/web/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nouvelle Vente",
+      "short_name": "Vente",
+      "url": "/vente-directe/",
+      "icons": [{ "src": "/static/web/img/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Inventaire Stock",
+      "short_name": "Stock",
+      "url": "/stock/",
+      "icons": [{ "src": "/static/web/img/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Rapport Finances",
+      "short_name": "Finances",
+      "url": "/finances/rapport/",
+      "icons": [{ "src": "/static/web/img/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

@@ -1,0 +1,205 @@
+{% extends 'web/base.html' %}
+{% block title %}Prédiction Ventes{% endblock %}
+{% block page_title %}📈 Prédiction des Ventes{% endblock %}
+
+{% block content %}
+
+<!-- Filtres jours -->
+<div class="d-flex gap-2 mb-4 align-items-center">
+  {% for j in options_jours %}
+  <a href="?jours={{ j }}" class="btn btn-sm {% if nb_jours == j %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+     style="border-radius:20px">J+{{ j }}</a>
+  {% endfor %}
+  <span class="text-muted ms-2" style="font-size:12px">Prévision sur {{ nb_jours }} jours</span>
+  <a href="{% url 'web:dashboard_ia' %}" class="btn btn-sm btn-outline-secondary ms-auto">
+    <i class="bi bi-arrow-left me-1"></i>Retour IA
+  </a>
+</div>
+
+{% if erreur %}
+<div class="alert alert-warning">
+  <i class="bi bi-exclamation-triangle me-2"></i>
+  {{ erreur }} — Installez scikit-learn : <code>pip install scikit-learn</code>
+</div>
+{% endif %}
+
+<!-- KPIs -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Produits analysés</div>
+      <div class="kpi-val">{{ resultats|length }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Alertes rupture</div>
+      <div class="kpi-val text-danger">{{ alertes|length }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">En hausse</div>
+      <div class="kpi-val text-success">{{ en_hausse|length }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">En baisse</div>
+      <div class="kpi-val" style="color:#e67e22">{{ en_baisse|length }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Graphique global -->
+{% if resultats %}
+<div class="card border-0 shadow-sm mb-4" style="border-radius:14px">
+  <div class="card-body p-4">
+    <h6 class="fw-bold mb-3"><i class="bi bi-bar-chart me-2 text-muted"></i>
+      Ventes totales prévues — {{ nb_jours }} prochains jours
+    </h6>
+    <canvas id="chartVentes" height="60"></canvas>
+  </div>
+</div>
+{% endif %}
+
+<!-- Alertes en premier -->
+{% if alertes %}
+<div class="mb-3">
+  <h6 class="fw-bold text-danger mb-2">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    {{ alertes|length }} produit{{ alertes|length|pluralize }} — Stock insuffisant prévu
+  </h6>
+  {% for r in alertes %}
+  <div class="card border-danger mb-2" style="border-radius:12px">
+    <div class="card-body py-3 px-4">
+      <div class="row align-items-center">
+        <div class="col">
+          <div class="fw-bold">{{ r.produit_nom }}</div>
+          <div class="text-muted" style="font-size:12px">{{ r.reference }}</div>
+        </div>
+        <div class="col-auto text-center">
+          <div style="font-size:11px;color:#6c757d">Stock actuel</div>
+          <div class="fw-bold text-danger fs-5">{{ r.stock_actuel|floatformat:0 }}</div>
+        </div>
+        <div class="col-auto text-center">
+          <i class="bi bi-arrow-right text-muted"></i>
+        </div>
+        <div class="col-auto text-center">
+          <div style="font-size:11px;color:#6c757d">Vente prévue J+{{ nb_jours }}</div>
+          <div class="fw-bold text-primary fs-5">{{ r.vente_prevue }}</div>
+        </div>
+        <div class="col-auto text-center">
+          <div style="font-size:11px;color:#6c757d">Manque</div>
+          <div class="fw-bold text-danger fs-5">{{ r.manque }}</div>
+        </div>
+        <div class="col-auto">
+          <span class="badge {% if r.tendance == 'hausse' %}bg-success{% elif r.tendance == 'baisse' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+            {% if r.tendance == 'hausse' %}↑ Hausse{% elif r.tendance == 'baisse' %}↓ Baisse{% else %}→ Stable{% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Tous les produits -->
+<div class="table-card">
+  <div class="table-card-header">
+    <h6><i class="bi bi-table me-2 text-muted"></i>Prévisions par produit</h6>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th class="text-center">Stock actuel</th>
+          <th class="text-center">Vente prévue J+{{ nb_jours }}</th>
+          <th class="text-center">Manque</th>
+          <th class="text-center">Tendance</th>
+          <th class="text-center">Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in resultats %}
+        <tr class="{% if r.alerte %}table-danger{% endif %}">
+          <td>
+            <div class="fw-semibold" style="font-size:13px">{{ r.produit_nom }}</div>
+            <div class="text-muted" style="font-size:11px">{{ r.reference }}</div>
+          </td>
+          <td class="text-center fw-bold {% if r.alerte %}text-danger{% else %}text-success{% endif %}">
+            {{ r.stock_actuel|floatformat:0 }}
+          </td>
+          <td class="text-center fw-bold text-primary">{{ r.vente_prevue }}</td>
+          <td class="text-center">
+            {% if r.manque > 0 %}
+            <span class="fw-bold text-danger">{{ r.manque }}</span>
+            {% else %}
+            <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            {% if r.tendance == 'hausse' %}
+            <span class="badge bg-success bg-opacity-15 text-success">↑ Hausse</span>
+            {% elif r.tendance == 'baisse' %}
+            <span class="badge bg-warning text-dark">↓ Baisse</span>
+            {% else %}
+            <span class="badge bg-secondary bg-opacity-15 text-secondary">→ Stable</span>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            {% if r.alerte %}
+            <span class="badge bg-danger">⚠ Commander</span>
+            {% else %}
+            <span class="badge bg-success bg-opacity-15 text-success">OK</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-4">
+          Aucune donnée de vente disponible. Créez des commandes pour alimenter le modèle.
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+{{ labels_jours_json|json_script:"labels-data" }}
+{{ totaux_par_jour_json|json_script:"totaux-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+const labels  = JSON.parse(document.getElementById('labels-data').textContent);
+const totaux  = JSON.parse(document.getElementById('totaux-data').textContent);
+
+new Chart(document.getElementById('chartVentes'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{
+      label: 'Ventes prévues (unités)',
+      data: totaux,
+      borderColor: '#185FA5',
+      backgroundColor: 'rgba(24,95,165,.1)',
+      fill: true,
+      tension: 0.4,
+      pointRadius: 5,
+      pointBackgroundColor: '#185FA5',
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.04)' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+</script>
+{% endblock %}

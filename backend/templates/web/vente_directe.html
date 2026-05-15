@@ -1,0 +1,448 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vente Directe - AutoPieces Pro</title>
+    <script src="https://unpkg.com/htmx.org@1.9.0"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        h1 {
+            color: #1a237e;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        h2 {
+            color: #424242;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 2px solid #e3f2fd;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #424242;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #1a237e;
+            box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.1);
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .search-result-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-result-item:hover {
+            background: #f5f5f5;
+        }
+
+        .result-name {
+            font-weight: 500;
+            color: #1a237e;
+        }
+
+        .result-info {
+            font-size: 12px;
+            color: #999;
+            margin-top: 3px;
+        }
+
+        .result-price {
+            font-weight: bold;
+            color: #4caf50;
+        }
+
+        .result-stock {
+            color: #f57c00;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #1a237e;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0d47a1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(26, 35, 126, 0.3);
+        }
+
+        .btn-danger {
+            background: #d32f2f;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b71c1c;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .panier-item {
+            background: #f9f9f9;
+            border-left: 4px solid #1a237e;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panier-item-info h3 {
+            color: #1a237e;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+
+        .panier-item-info p {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .panier-item-total {
+            text-align: right;
+        }
+
+        .panier-item-total .amount {
+            font-size: 16px;
+            font-weight: bold;
+            color: #4caf50;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 30px 20px;
+        }
+
+        .totals {
+            background: #e3f2fd;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: #424242;
+            font-size: 14px;
+        }
+
+        .total-row.final {
+            border-top: 2px solid #1a237e;
+            padding-top: 10px;
+            font-weight: bold;
+            color: #1a237e;
+            font-size: 16px;
+        }
+
+        .remise-section {
+            background: #fff3e0;
+            border-left: 4px solid #ff6f00;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .remise-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .htmx-request.htmx-settling .htmx-swapping {
+            opacity: 0;
+            transition: opacity 200ms ease-out;
+            swapping: 200ms swap 0ms;
+        }
+
+        .htmx-request.htmx-settling .htmx-settling {
+            opacity: 1;
+            transition: opacity 200ms ease-in;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #1a237e;
+            opacity: 0;
+            animation: loading 1.4s infinite;
+        }
+
+        .loading:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes loading {
+            0%, 80%, 100% { opacity: 0; }
+            40% { opacity: 1; }
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .alert-danger {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #d32f2f;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- COLONNE GAUCHE: FORMULAIRE -->
+        <div>
+            <div class="card">
+                <h1>💰 Vente Directe</h1>
+
+                <!-- Infos Client -->
+                <div class="form-group">
+                    <label for="client">Client *</label>
+                    <select id="client" name="client" hx-get="/api/clients/" hx-target="#client_info" hx-trigger="change">
+                        <option value="">-- Sélectionner un client --</option>
+                    </select>
+                </div>
+
+                <div id="client_info"></div>
+
+                <!-- Localisation -->
+                <div class="form-group">
+                    <label for="localisation">Point de vente *</label>
+                    <select id="localisation" name="localisation">
+                        <option value="">-- Sélectionner --</option>
+                    </select>
+                </div>
+
+                <!-- RECHERCHE PRODUIT -->
+                <h2>Ajouter des articles</h2>
+                <div class="form-group search-box">
+                    <label for="search">Rechercher produit</label>
+                    <input 
+                        type="text" 
+                        id="search" 
+                        placeholder="Nom, référence (min 2 caractères)..."
+                        hx-get="/api/commandes/recherche-produit/"
+                        hx-target="#search-results"
+                        hx-trigger="keyup changed delay:300ms"
+                        hx-params="q=this.value&localisation=this.value"
+                    />
+                    <div id="search-results" class="search-results"></div>
+                </div>
+
+                <!-- QTÉ À AJOUTER -->
+                <div class="form-group">
+                    <label for="quantite">Quantité</label>
+                    <input type="number" id="quantite" value="1" min="1" max="1000" />
+                </div>
+
+                <button class="btn btn-primary btn-small" hx-post="/api/commandes/panier/" hx-target="#panier">
+                    Ajouter au panier
+                </button>
+            </div>
+        </div>
+
+        <!-- COLONNE DROITE: PANIER + TOTAUX -->
+        <div>
+            <div class="card">
+                <h2>🛒 Panier</h2>
+                <div id="panier" hx-trigger="load" hx-get="/api/commandes/{{ commande_id }}/"></div>
+
+                <!-- REMISE -->
+                <div class="remise-section">
+                    <h3>Appliquer une remise</h3>
+                    <div class="remise-controls">
+                        <select id="type_remise" onchange="toggleRemiseType()">
+                            <option value="POURCENT">% Pourcentage</option>
+                            <option value="FIXE">GNF Montant fixe</option>
+                        </select>
+                        <input type="number" id="valeur_remise" placeholder="0" min="0" />
+                    </div>
+                    <button class="btn btn-primary btn-small" style="margin-top:10px; width:100%;" hx-post="/api/commandes/calcul-remise/" hx-target="#totaux">
+                        Appliquer
+                    </button>
+                </div>
+
+                <!-- TOTAUX -->
+                <div id="totaux" class="totals">
+                    <div class="total-row">
+                        <span>Total HT:</span>
+                        <span id="total_ht">0.00 GNF</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Remise:</span>
+                        <span id="remise">0.00 GNF</span>
+                    </div>
+                    <div class="total-row final">
+                        <span>TOTAL TTC:</span>
+                        <span id="total_ttc">0.00 GNF</span>
+                    </div>
+                </div>
+
+                <!-- PAIEMENT -->
+                <h2>Paiement</h2>
+                <div class="form-group">
+                    <label for="mode_paiement">Mode de paiement *</label>
+                    <select id="mode_paiement">
+                        <option value="CASH">Espèces</option>
+                        <option value="MOBILE_MONEY">Mobile Money</option>
+                        <option value="VIREMENT">Virement Bancaire</option>
+                        <option value="DIVERS">Autre</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="montant_paiement">Montant à payer</label>
+                    <input type="number" id="montant_paiement" placeholder="0.00" min="0" step="0.01" />
+                </div>
+
+                <button class="btn btn-primary" style="width:100%;" hx-post="/api/commandes/{{ commande_id }}/paiement/">
+                    ✓ Enregistrer paiement
+                </button>
+
+                <button class="btn btn-primary" style="width:100%; margin-top:10px;">
+                    📄 Imprimer facture
+                </button>
+
+                <button class="btn btn-danger" style="width:100%; margin-top:10px;">
+                    ✕ Annuler vente
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleRemiseType() {
+            const type = document.getElementById('type_remise').value;
+            const input = document.getElementById('valeur_remise');
+            if (type === 'POURCENT') {
+                input.placeholder = '0 - 100';
+                input.max = '100';
+            } else {
+                input.placeholder = '0.00';
+                input.removeAttribute('max');
+            }
+        }
+
+        // Ajouter au panier
+        document.querySelector('.btn-small').addEventListener('click', function() {
+            const produit_id = document.getElementById('search').dataset.produitId;
+            const quantite = document.getElementById('quantite').value;
+            
+            if (!produit_id) {
+                alert('Veuillez sélectionner un produit');
+                return;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+{% extends 'web/base.html' %}
+{% block title %}Transferts{% endblock %}
+{% block page_title %}Transferts de Stock{% endblock %}
+
+{% block content %}
+
+<div class="row g-3 mb-4 align-items-center">
+  <div class="col-md-6">
+    <h5 class="mb-0" style="color: #1a3a5c;">Transferts entre localisations</h5>
+  </div>
+  <div class="col-md-6 text-md-end">
+    <a href="{% url 'web:transfert_nouveau' %}" class="btn fw-bold px-4" style="background:#1a3a5c;color:#fff;border-radius:10px">
+      <i class="bi bi-plus-lg me-2"></i>Nouveau Transfert
+    </a>
+  </div>
+</div>
+
+<!-- Filtres -->
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card" style="border-radius: 12px; border: 1px solid #e9ecef;">
+      <div class="card-body p-3">
+        <form method="get" class="row g-2">
+          <div class="col-md-8">
+            <select class="form-select" name="statut">
+              <option value="">Tous les statuts</option>
+              {% for value, label in statuts %}
+              <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <button type="submit" class="btn btn-outline-primary w-100">
+              <i class="bi bi-search me-2"></i>Filtrer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tableau transferts -->
+<div class="row">
+  <div class="col-12">
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>N°</th>
+              <th>Source</th>
+              <th>Destination</th>
+              <th>Date</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for transfert in transferts %}
+            <tr>
+              <td class="fw-bold">{{ transfert.reference|default:"N/A" }}</td>
+              <td>{{ transfert.provenance.nom|default:"N/A" }}</td>
+              <td>{{ transfert.destination.nom|default:"N/A" }}</td>
+              <td>{{ transfert.date_creation|date:"d/m/Y" }}</td>
+              <td>
+                <span class="badge 
+                  {% if transfert.statut == 'PROPOSE' %}bg-warning text-dark
+                  {% elif transfert.statut == 'VALIDE' or transfert.statut == 'EXPEDIE' %}bg-info text-dark
+                  {% elif transfert.statut == 'RECU' %}bg-success
+                  {% elif transfert.statut == 'ANNULE' %}bg-danger
+                  {% else %}bg-secondary{% endif %}" style="font-size: 11px;">
+                  {{ transfert.get_statut_display }}
+                </span>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">
+                Aucun transfert
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

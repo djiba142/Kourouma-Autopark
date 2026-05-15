@@ -1,0 +1,28 @@
+<!-- Template partiel: Résultats recherche produit -->
+{% if results %}
+    {% for result in results %}
+        <div class="search-result-item" 
+             onclick="selectProduit({{ result.id }}, '{{ result.nom }}', {{ result.prix_unitaire }}, {{ result.quantite_dispo }})">
+            <div class="result-name">{{ result.nom }}</div>
+            <div class="result-info">
+                Réf: {{ result.reference }} | 
+                <span class="result-price">{{ result.prix_unitaire|floatformat:2 }} GNF</span> |
+                <span class="result-stock">Stock: {{ result.quantite_dispo }} {{ result.unite }}</span>
+            </div>
+        </div>
+    {% endfor %}
+{% elif message %}
+    <div class="search-result-item">
+        <div class="result-info">{{ message }}</div>
+    </div>
+{% endif %}
+
+<script>
+    function selectProduit(id, nom, prix, stock) {
+        document.getElementById('search').value = nom;
+        document.getElementById('search').dataset.produitId = id;
+        document.getElementById('search').dataset.prix = prix;
+        document.getElementById('search').dataset.stock = stock;
+        document.getElementById('search-results').innerHTML = '';
+    }
+</script>

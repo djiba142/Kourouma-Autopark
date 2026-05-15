@@ -1,0 +1,102 @@
+{% extends 'web/base.html' %}
+{% block title %}Détection Anomalies{% endblock %}
+{% block page_title %}🛡️ Détection d'Anomalies Financières{% endblock %}
+
+{% block content %}
+
+<div class="d-flex gap-2 mb-4 align-items-center">
+  {% for j in options_jours %}
+  <a href="?jours={{ j }}" class="btn btn-sm {% if nb_jours == j %}btn-danger{% else %}btn-outline-secondary{% endif %}"
+     style="border-radius:20px">{{ j }}j</a>
+  {% endfor %}
+  <a href="{% url 'web:dashboard_ia' %}" class="btn btn-sm btn-outline-secondary ms-auto">
+    <i class="bi bi-arrow-left me-1"></i>Retour IA
+  </a>
+</div>
+
+{% if erreur %}
+<div class="alert alert-warning">
+  <i class="bi bi-exclamation-triangle me-2"></i>{{ erreur }}
+</div>
+{% endif %}
+
+<!-- KPIs -->
+<div class="row g-3 mb-4">
+  <div class="col-4">
+    <div class="kpi-card text-center" style="border-left:4px solid #c0392b">
+      <div class="kpi-label text-danger">Critiques</div>
+      <div class="kpi-val text-danger">{{ critiques|length }}</div>
+    </div>
+  </div>
+  <div class="col-4">
+    <div class="kpi-card text-center" style="border-left:4px solid #e67e22">
+      <div class="kpi-label" style="color:#e67e22">Suspectes</div>
+      <div class="kpi-val" style="color:#e67e22">{{ suspects|length }}</div>
+    </div>
+  </div>
+  <div class="col-4">
+    <div class="kpi-card text-center" style="border-left:4px solid #1e8449">
+      <div class="kpi-label text-success">Normales</div>
+      <div class="kpi-val text-success">{{ normaux|length }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="table-card">
+  <div class="table-card-header">
+    <h6><i class="bi bi-journal-x me-2 text-muted"></i>Opérations analysées — {{ nb_jours }} derniers jours</h6>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead>
+        <tr><th>Opération</th><th>Type</th><th>Flux</th><th class="text-end">Montant GNF</th>
+            <th>Heure</th><th>Par</th><th>Score IA</th><th>Niveau</th></tr>
+      </thead>
+      <tbody>
+        {% for r in resultats %}
+        <tr class="{% if r.niveau == 'CRITIQUE' %}table-danger{% elif r.niveau == 'SUSPECT' %}table-warning{% endif %}">
+          <td style="font-family:monospace;font-size:11px">{{ r.numero }}</td>
+          <td><span class="badge bg-secondary bg-opacity-15 text-secondary" style="font-size:10px">{{ r.type }}</span></td>
+          <td><span class="badge {% if r.flux == 'ENTREE' %}bg-success{% else %}bg-danger{% endif %} bg-opacity-15
+                         {% if r.flux == 'ENTREE' %}text-success{% else %}text-danger{% endif %}" style="font-size:10px">
+            {{ r.flux }}</span></td>
+          <td class="text-end fw-bold">{{ r.montant|floatformat:0 }}</td>
+          <td style="font-size:12px">{{ r.heure }}</td>
+          <td style="font-size:12px">{{ r.utilisateur }}</td>
+          <td>
+            <span class="fw-bold {% if r.score < -0.3 %}color-danger{% elif r.score < -0.1 %}color-warning{% else %}color-success{% endif %}"
+                  style="font-size:12px">
+              {{ r.score }}
+            </span>
+          </td>
+          <td>
+            {% if r.niveau == 'CRITIQUE' %}
+            <span class="badge bg-danger" style="font-size:10px">🚨 CRITIQUE</span>
+            {% elif r.niveau == 'SUSPECT' %}
+            <span class="badge bg-warning text-dark" style="font-size:10px">⚠ SUSPECT</span>
+            {% else %}
+            <span class="badge bg-success bg-opacity-15 text-success" style="font-size:10px">✓ Normal</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-center text-muted py-4">
+          Aucune opération analysée. Alimentez le journal financier d'abord.
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card border-0 mt-3" style="border-radius:12px;background:#f8f9fa">
+  <div class="card-body p-3" style="font-size:12px;color:#6c757d">
+    <strong>Comment lire le score IA :</strong>
+    Score proche de 0 = opération normale.
+    Score &lt; -0.1 = montant ou horaire inhabituel.
+    Score &lt; -0.3 = très anormal — vérifier immédiatement.
+    Algorithme : <strong>Isolation Forest</strong> (scikit-learn).
+  </div>
+</div>
+
+{% endblock %}

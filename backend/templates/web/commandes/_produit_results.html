@@ -1,0 +1,22 @@
+{% for p in produits %}
+{% with stock=p.stocks_locations.first %}
+<div class="produit-result d-flex align-items-center justify-content-between p-3 border-bottom"
+     onclick="ajouterProduit('{{ p.pk }}','{{ p.nom|escapejs }}','{{ p.reference }}','{{ p.prix_vente }}','{{ stock.quantite|default:0 }}')"
+     role="button">
+  <div>
+    <div class="fw-semibold" style="font-size:13px">{{ p.nom }}</div>
+    <div class="text-muted" style="font-size:11px">Réf: {{ p.reference }} · Stock: {{ stock.quantite|default:0 }}</div>
+  </div>
+  <div class="text-end">
+    <div class="fw-bold" style="color:#1a3a5c;font-size:13px">{{ p.prix_vente|floatformat:0 }} GNF</div>
+    {% if stock.quantite == 0 %}
+      <span class="badge bg-danger" style="font-size:10px">Rupture</span>
+    {% elif stock.quantite <= p.seuil_alerte %}
+      <span class="badge bg-warning text-dark" style="font-size:10px">Stock faible</span>
+    {% endif %}
+  </div>
+</div>
+{% endwith %}
+{% empty %}
+<div class="text-muted text-center p-3" style="font-size:13px">Aucun produit trouvé</div>
+{% endfor %}

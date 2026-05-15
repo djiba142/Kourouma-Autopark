@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
+  .container { max-width: 640px; margin: 0 auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+  .header { background: linear-gradient(135deg,#1a3a5c,#2d5a8e); color: #fff; padding: 32px; text-align: center; }
+  .header h1 { margin: 0; font-size: 24px; font-weight: 700; }
+  .header p  { margin: 8px 0 0; opacity: .8; font-size: 14px; }
+  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; }
+  .kpi { padding: 20px; text-align: center; border-right: 1px solid #f0f0f0; }
+  .kpi:last-child { border-right: none; }
+  .kpi .val  { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+  .kpi .lbl  { font-size: 11px; color: #6c757d; text-transform: uppercase; letter-spacing: .05em; }
+  .section { padding: 24px 32px; border-top: 1px solid #f0f0f0; }
+  .section h3 { font-size: 14px; font-weight: 700; color: #1a3a5c; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f8f9fa; padding: 8px 10px; text-align: left; font-size: 11px; color: #6c757d; }
+  td { padding: 8px 10px; border-bottom: 1px solid #f0f0f0; }
+  .footer { background: #0f2540; color: rgba(255,255,255,.6); padding: 20px 32px; text-align: center; font-size: 12px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .badge-green  { background: #d4edda; color: #155724; }
+  .badge-red    { background: #f8d7da; color: #721c24; }
+  .badge-orange { background: #fff3cd; color: #856404; }
+</style>
+</head>
+<body>
+<div class="container">
+
+{% load static %}
+  <!-- En-tête -->
+  <div class="header">
+    <img src="{% static "web/img/logo_bangaly.png" %}" alt="Logo" style="width: 80px; height: auto; border-radius: 12px; margin-bottom: 12px; background: #fff; padding: 5px;">
+    <h1>📊 Rapport Mensuel BANGALY-AUTOPARK-BSG</h1>
+    <p>{{ mois_label }} · {{ debut|date:"d/m/Y" }} – {{ fin|date:"d/m/Y" }}</p>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="val" style="--entrees-color: #1e8449; color: var(--entrees-color)">{{ entrees|floatformat:0 }} GNF</div>
+      <div class="lbl">Encaissements</div>
+    </div>
+    <div class="kpi">
+      <div class="val" style="--sorties-color: #c0392b; color: var(--sorties-color)">{{ sorties|floatformat:0 }} GNF</div>
+      <div class="lbl">Dépenses totales</div>
+    </div>
+    <div class="kpi">
+      <div class="val" style="--profit-color: {% if profit >= 0 %}#1e8449{% else %}#c0392b{% endif %}; color: var(--profit-color)">
+        {{ profit|floatformat:0 }} GNF
+      </div>
+      <div class="lbl">Profit net</div>
+    </div>
+  </div>
+
+  <!-- Indicateurs -->
+  <div style="padding:16px 32px;background:#f8f9fa;display:flex;gap:12px;flex-wrap:wrap;border-top:1px solid #f0f0f0">
+    <span class="badge badge-green">{{ nb_commandes }} commandes</span>
+    <span class="badge badge-orange">{{ nb_clients }} clients actifs</span>
+    {% if nb_alertes_stock > 0 %}
+    <span class="badge badge-red">⚠ {{ nb_alertes_stock }} alertes stock</span>
+    {% endif %}
+  </div>
+
+  <!-- Top produits -->
+  <div class="section">
+    <h3>🏆 Top 5 Produits</h3>
+    <table>
+      <tr><th>Produit</th><th>Qté vendue</th><th>CA (GNF)</th></tr>
+      {% for p in top_produits %}
+      <tr>
+        <td>{{ p.produit__nom }}</td>
+        <td style="font-weight:600">{{ p.total_qte }}</td>
+        <td style="font-weight:600;color:#1a3a5c">{{ p.total_ca|floatformat:0 }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3" style="color:#6c757d;text-align:center;padding:16px">Aucune vente ce mois</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <!-- Top clients -->
+  <div class="section">
+    <h3>👥 Top 5 Clients</h3>
+    <table>
+      <tr><th>Client</th><th>Commandes</th><th>CA total (GNF)</th></tr>
+      {% for c in top_clients %}
+      <tr>
+        <td>{{ c.client__nom }}</td>
+        <td>{{ c.nb_commandes }}</td>
+        <td style="font-weight:600;color:#1a3a5c">{{ c.total_ca|floatformat:0 }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3" style="color:#6c757d;text-align:center;padding:16px">Aucun client ce mois</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <!-- Dépenses -->
+  <div class="section">
+    <h3>💸 Dépenses par Catégorie</h3>
+    <div style="display:flex;gap:16px;margin-bottom:12px">
+      <div>
+        <span class="badge badge-green">Business : {{ dep_entreprise|floatformat:0 }} GNF</span>
+      </div>
+      <div>
+        <span class="badge badge-orange">Personnel : {{ dep_personnel|floatformat:0 }} GNF</span>
+      </div>
+    </div>
+    <table>
+      <tr><th>Catégorie</th><th>Montant (GNF)</th></tr>
+      {% for d in dep_par_cat %}
+      <tr>
+        <td>{{ d.categorie__nom|default:"Non catégorisé" }}</td>
+        <td style="font-weight:600;color:#c0392b">{{ d.total|floatformat:0 }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="2" style="color:#6c757d;text-align:center;padding:16px">Aucune dépense</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    Rapport généré automatiquement par BSG Dashboard<br>
+    {{ debut|date:"d/m/Y" }} — Ce document est confidentiel
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,78 @@
+{% extends 'web/base.html' %}
+{% block title %}Nouvelle Dépense{% endblock %}
+{% block page_title %}Nouvelle Dépense{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm" style="border-radius:16px">
+      <div class="card-body p-4">
+        <h5 class="fw-bold mb-4"><i class="bi bi-dash-circle me-2 text-danger"></i>Enregistrer une dépense</h5>
+
+        <form method="post" action="{% url 'web:depenses_nouvelle' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Description *</label>
+            <input type="text" name="description" class="form-control"
+                   placeholder="Ex: Transport marchandises Kaloum" required>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Montant *</label>
+              <input type="number" name="montant" class="form-control fw-bold"
+                     style="font-size:1.1rem" min="1" placeholder="0" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Devise</label>
+              <select name="devise" class="form-select">
+                <option value="GNF" selected>GNF — Franc Guinéen</option>
+                <option value="USD">USD — Dollar</option>
+                <option value="EUR">EUR — Euro</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Catégorie *</label>
+            <input list="categories-list" name="categorie_nom" class="form-control" 
+                   placeholder="Choisir ou saisir une catégorie..." required>
+            <datalist id="categories-list">
+              {% for c in categories %}
+              <option value="{{ c.nom }}">
+              {% endfor %}
+            </datalist>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Type</label>
+            <div class="d-flex gap-2">
+              {% for val, lbl in types %}
+              <div class="flex-fill">
+                <input type="radio" class="btn-check" name="type_depense"
+                       id="type_{{ val }}" value="{{ val }}"
+                       {% if val == 'ENTREPRISE' %}checked{% endif %}>
+                <label class="btn btn-outline-secondary w-100" for="type_{{ val }}"
+                       style="font-size:13px">{{ lbl }}</label>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn fw-bold px-4 py-2"
+                    style="background:#c0392b;color:#fff;border-radius:10px">
+              <i class="bi bi-check-circle me-2"></i>Enregistrer
+            </button>
+            <a href="{% url 'web:depenses_liste' %}" class="btn btn-outline-secondary px-4 py-2"
+               style="border-radius:10px">Annuler</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

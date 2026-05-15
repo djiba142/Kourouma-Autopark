@@ -3,19 +3,19 @@ from django.db import models
 from django.utils import timezone
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, nom, password=None, role='EMPLOYE', **extra_fields):
+    def create_user(self, email, nom, telephone=None, password=None, role='EMPLOYE', **extra_fields):
         if not email:
             raise ValueError("L'email est obligatoire")
         email = self.normalize_email(email)
-        user = self.model(email=email, nom=nom, role=role, **extra_fields)
+        user = self.model(email=email, nom=nom, telephone=telephone, role=role, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, nom, password=None, **extra_fields):
+    def create_superuser(self, email, nom, telephone=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        return self.create_user(email, nom, password, role='ADMIN', **extra_fields)
+        return self.create_user(email, nom, telephone, password, role='ADMIN', **extra_fields)
 
 class Utilisateur(AbstractBaseUser, PermissionsMixin):
     ROLES = (
@@ -25,6 +25,7 @@ class Utilisateur(AbstractBaseUser, PermissionsMixin):
     )
 
     email = models.EmailField(unique=True, verbose_name="Adresse email")
+    telephone = models.CharField(max_length=20, unique=True, null=True, blank=True, verbose_name="Numéro de téléphone")
     nom = models.CharField(max_length=100, verbose_name="Nom complet")
     role = models.CharField(max_length=15, choices=ROLES, default='EMPLOYE')
     actif = models.BooleanField(default=True)
@@ -50,3 +51,27 @@ class Utilisateur(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.nom} ({self.role})"
+
+    @property
+    def role_color(self):
+        return {
+            'ADMIN': '#993C1D',
+            'MAGASINIER': '#3C3489',
+            'EMPLOYE': '#0C447C',
+        }.get(self.role, '#0C447C')
+
+    @property
+    def role_bg(self):
+        return {
+            'ADMIN': '#FAECE7',
+            'MAGASINIER': '#EEEDFE',
+            'EMPLOYE': '#E6F1FB',
+        }.get(self.role, '#E6F1FB')
+
+    @property
+    def role_avatar_bg(self):
+        return {
+            'ADMIN': '#e8593c',
+            'MAGASINIER': '#534AB7',
+            'EMPLOYE': '#185FA5',
+        }.get(self.role, '#185FA5')

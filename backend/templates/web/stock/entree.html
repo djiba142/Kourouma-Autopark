@@ -1,0 +1,85 @@
+{% extends 'web/base.html' %}
+{% block title %}Entrée de Stock{% endblock %}
+{% block page_title %}Enregistrer une Entrée de Stock{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-lg-6 mx-auto">
+    <div class="card" style="border-radius: 12px; border: 1px solid #e9ecef;">
+      <div class="card-body p-4">
+        
+        {% if messages %}
+        {% for msg in messages %}
+        <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="alert alert-secondary" style="font-size: 13.5px;">
+          <i class="bi bi-info-circle me-1"></i> <strong>Astuce :</strong> Vous pouvez soit sélectionner un produit unique ci-dessous, soit importer un fichier Excel/CSV pour plusieurs produits en même temps.
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          
+          <div class="mb-3">
+            <label for="localisation_id" class="form-label fw-600" style="color: #1a3a5c;">Destination (Localisation) <span class="text-danger">*</span></label>
+            <select class="form-select" id="localisation_id" name="localisation_id" required>
+              <option value="">-- Sélectionner la destination --</option>
+              {% for localisation in localisations %}
+              <option value="{{ localisation.id }}">{{ localisation.nom }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <hr class="my-4">
+          <h6 class="fw-bold" style="color:#1a3a5c;">OPTION A : Saisie Manuelle (Un seul produit)</h6>
+
+          <div class="mb-3">
+            <label for="produit_id" class="form-label fw-600" style="color: #1a3a5c;">Produit</label>
+            <select class="form-select" id="produit_id" name="produit_id">
+              <option value="">-- Sélectionner un produit --</option>
+              {% for produit in produits %}
+              <option value="{{ produit.id }}">{{ produit.nom }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="row g-2 mb-4">
+            <div class="col-md-4">
+              <label for="quantite" class="form-label fw-600" style="color: #1a3a5c;">Quantité</label>
+              <input type="number" class="form-control" id="quantite" name="quantite" min="1">
+            </div>
+            <div class="col-md-8">
+              <label for="reference" class="form-label fw-600" style="color: #1a3a5c;">Référence (bon d'entrée...)</label>
+              <input type="text" class="form-control" id="reference" name="reference" placeholder="Ex: BL-2026-001">
+            </div>
+          </div>
+
+          <hr class="my-4">
+          <h6 class="fw-bold" style="color:#1a3a5c;">OPTION B : Import par Fichier (Plusieurs produits)</h6>
+          
+          <div class="mb-4">
+            <label for="fichier" class="form-label fw-600" style="color: #1a3a5c;">Fichier (.csv, .xlsx)</label>
+            <input class="form-control" type="file" id="fichier" name="fichier" accept=".csv, .xlsx, .xls">
+            <small class="text-muted">Format: 2 colonnes (<code>reference</code> et <code>quantite</code>)</small>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn fw-bold py-2" style="background: #1a3a5c; color: #fff; font-size: 15px;">
+              <i class="bi bi-save me-2"></i>Enregistrer le stock
+            </button>
+            <a href="{% url 'web:stock_liste' %}" class="btn btn-outline-secondary">
+              <i class="bi bi-x-circle me-2"></i>Annuler
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

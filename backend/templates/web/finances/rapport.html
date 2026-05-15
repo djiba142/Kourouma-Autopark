@@ -1,0 +1,323 @@
+{% extends 'web/base.html' %}
+{% load humanize %}
+{% block title %}Rapport Financier{% endblock %}
+{% block page_title %}Rapport Financier{% endblock %}
+
+{% block extra_css %}
+<style>
+  .periode-btn { border-radius: 20px; font-size: 12px; font-weight: 600; padding: 5px 16px; }
+  .periode-btn.active { background: #1a3a5c; color: #fff; border-color: #1a3a5c; }
+  .kpi-lg { background:#fff; border-radius:14px; border:1px solid #e9ecef; padding:1.25rem 1.5rem; }
+  .kpi-lg .label { font-size:11px; font-weight:600; color:#6c757d; text-transform:uppercase; letter-spacing:.06em; }
+  .kpi-lg .val   { font-size:1.7rem; font-weight:700; line-height:1.2; margin-top:4px; }
+  .kpi-lg .sub   { font-size:11px; color:#6c757d; margin-top:3px; }
+  .solde-card { background:linear-gradient(135deg,#1a3a5c,#2d6a9f); color:#fff; border-radius:16px; padding:1.5rem; }
+  .budget-bar  { height:8px; border-radius:4px; background:#e9ecef; overflow:hidden; }
+  .budget-fill { height:100%; border-radius:4px; transition:width .4s; }
+  .chart-card  { background:#fff; border-radius:14px; border:1px solid #e9ecef; padding:1.25rem; }
+  .type-badge  { font-size:10px; font-weight:600; padding:3px 10px; border-radius:12px; }
+  .badge-pro   { background:#E6F1FB; color:#0C447C; }
+  .badge-perso { background:#FAEEDA; color:#633806; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Filtres période ── -->
+<div class="d-flex flex-wrap gap-2 align-items-center mb-4">
+  <a href="?periode=jour"       class="btn btn-outline-secondary periode-btn {% if periode == 'jour' %}active{% endif %}">Aujourd'hui</a>
+  <a href="?periode=semaine"    class="btn btn-outline-secondary periode-btn {% if periode == 'semaine' %}active{% endif %}">Semaine</a>
+  <a href="?periode=mois"       class="btn btn-outline-secondary periode-btn {% if periode == 'mois' %}active{% endif %}">Mois</a>
+  <a href="?periode=trimestre"  class="btn btn-outline-secondary periode-btn {% if periode == 'trimestre' %}active{% endif %}">Trimestre</a>
+  <a href="?periode=annee"      class="btn btn-outline-secondary periode-btn {% if periode == 'annee' %}active{% endif %}">Année</a>
+
+  <span class="text-muted ms-2" style="font-size:12px">
+    {{ debut|date:"d M Y" }} → {{ fin|date:"d M Y" }}
+  </span>
+
+  {% if is_admin %}
+  <a href="{% url 'web:export_journal' %}?periode={{ periode }}"
+     class="btn btn-outline-success btn-sm fw-bold ms-auto">
+    <i class="bi bi-download me-1"></i>Export Excel
+  </a>
+  {% endif %}
+</div>
+
+<!-- ── Ligne 1 : Solde caisse + KPIs principaux ── -->
+<div class="row g-3 mb-4">
+
+  <!-- Solde caisse (temps réel) -->
+  <div class="col-md-4">
+    <div class="solde-card h-100">
+      <div style="font-size:11px;font-weight:600;opacity:.7;letter-spacing:.06em;text-transform:uppercase">
+        Solde Caisse — Temps Réel
+      </div>
+      <div id="solde-val" style="font-size:2rem;font-weight:700;margin-top:8px">
+        {{ solde_caisse|floatformat:0 }} GNF
+      </div>
+      <div style="font-size:11px;opacity:.6;margin-top:4px">Total cumulé toutes périodes</div>
+      <button class="btn btn-sm mt-3"
+              style="background:rgba(255,255,255,.15);color:#fff;border:none;font-size:11px"
+              hx-get="{% url 'web:solde_caisse_json' %}"
+              hx-trigger="click"
+              hx-on::after-request="document.getElementById('solde-val').textContent = JSON.parse(event.detail.xhr.response).solde_fmt">
+        <i class="bi bi-arrow-clockwise me-1"></i>Rafraîchir
+      </button>
+    </div>
+  </div>
+
+  <!-- Encaissements -->
+  <div class="col-md-4 col-6">
+    <div class="kpi-lg h-100">
+      <div class="label"><i class="bi bi-arrow-down-circle me-1 text-success"></i>Encaissements</div>
+      <div class="val text-success">{{ entrees|floatformat:0 }} GNF</div>
+      <div class="sub">Paiements reçus sur la période</div>
+    </div>
+  </div>
+
+  <!-- Sorties -->
+  <div class="col-md-4 col-6">
+    <div class="kpi-lg h-100">
+      <div class="label"><i class="bi bi-arrow-up-circle me-1 text-danger"></i>Sorties</div>
+      <div class="val text-danger">{{ sorties|floatformat:0 }} GNF</div>
+      <div class="sub">Dépenses + achats sur la période</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Ligne 2 : Profit + Dépenses (perso / pro) ── -->
+<div class="row g-3 mb-4">
+
+  <!-- Profit net -->
+  <div class="col-md-4">
+    <div class="kpi-lg">
+      <div class="label"><i class="bi bi-graph-up me-1"></i>Profit Net</div>
+      <div class="val {% if profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+        {% if profit >= 0 %}+{% endif %}{{ profit|floatformat:0 }} GNF
+      </div>
+      <div class="sub">Encaissements − Sorties</div>
+    </div>
+  </div>
+
+  <!-- Dépenses PRO -->
+  <div class="col-md-4">
+    <div class="kpi-lg">
+      <div class="d-flex align-items-center justify-content-between mb-1">
+        <div class="label"><i class="bi bi-briefcase me-1"></i>Dépenses Business</div>
+        <span class="type-badge badge-pro">ENTREPRISE</span>
+      </div>
+      <div class="val" style="color:#185FA5">{{ dep_entreprise|floatformat:0 }} GNF</div>
+      <div class="sub">Frais professionnels</div>
+    </div>
+  </div>
+
+  <!-- Dépenses PERSO (Admin seulement) -->
+  {% if is_admin %}
+  <div class="col-md-4">
+    <div class="kpi-lg" style="border-left:3px solid #BA7517">
+      <div class="d-flex align-items-center justify-content-between mb-1">
+        <div class="label"><i class="bi bi-person me-1"></i>Dépenses Personnelles</div>
+        <span class="type-badge badge-perso">PERSONNEL</span>
+      </div>
+      <div class="val" style="color:#BA7517">{{ dep_personnel|floatformat:0 }} GNF</div>
+      <div class="sub">Visible par l'admin uniquement</div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-md-4">
+    <div class="kpi-lg" style="background:#f8f9fa">
+      <div class="label"><i class="bi bi-lock me-1"></i>Dépenses Personnelles</div>
+      <div class="val text-muted" style="font-size:1.1rem">Accès restreint</div>
+      <div class="sub">Réservé à l'administrateur</div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- ── Ligne 3 : Graphique + Budget catégories ── -->
+<div class="row g-3 mb-4">
+
+  <!-- Graphique ventes vs dépenses -->
+  <div class="col-md-8">
+    <div class="chart-card">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-bold mb-0">Ventes vs Dépenses — 7 derniers jours</h6>
+        <div class="d-flex gap-2" style="font-size:11px">
+          <span><span style="display:inline-block;width:10px;height:10px;background:#1e8449;border-radius:2px;margin-right:4px"></span>Ventes</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#c0392b;border-radius:2px;margin-right:4px"></span>Dépenses</span>
+        </div>
+      </div>
+      <canvas id="chartVentesDepenses" height="90"></canvas>
+    </div>
+  </div>
+
+  <!-- Budget par catégorie -->
+  <div class="col-md-4">
+    <div class="chart-card h-100">
+      <h6 class="fw-bold mb-3">Budget par Catégorie</h6>
+      {% if categories_budget %}
+        {% for cat in categories_budget %}
+        <div class="mb-3">
+          <div class="d-flex justify-content-between mb-1">
+            <span style="font-size:12px;font-weight:600">{{ cat.nom }}</span>
+            <span class="{% if cat.alerte %}color-danger{% else %}color-muted{% endif %}" style="font-size:11px">
+              {{ cat.pct }}%
+            </span>
+          </div>
+          <div class="budget-bar">
+            <div class="budget-fill {% if cat.pct >= 100 %}bg-danger{% elif cat.pct >= 80 %}bg-warning{% else %}bg-success{% endif %}"
+                 data-bsg-width="{{ cat.pct }}%">
+            </div>
+          </div>
+          <div class="d-flex justify-content-between mt-1">
+            <span style="font-size:10px;color:#6c757d">{{ cat.consomme|floatformat:0 }} GNF</span>
+            <span style="font-size:10px;color:#6c757d">/ {{ cat.budget|floatformat:0 }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted text-center py-3" style="font-size:13px">
+          Aucun budget défini.<br>
+          <a href="/admin/finances/categoriedepense/" style="font-size:12px">Configurer les budgets</a>
+        </p>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Ligne 4 : Journal récent + Dépenses par catégorie ── -->
+<div class="row g-3">
+
+  <!-- Journal récent -->
+  <div class="col-md-7">
+    <div class="table-card">
+      <div class="table-card-header">
+        <h6><i class="bi bi-journal-check me-2 text-muted"></i>Journal de la période</h6>
+        <a href="{% url 'web:finances_liste' %}?periode={{ periode }}"
+           class="btn btn-sm btn-outline-secondary">Voir tout</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr><th>N°</th><th>Type</th><th>Flux</th><th class="text-end">Montant GNF</th><th>Date</th></tr>
+          </thead>
+          <tbody>
+            {% for j in journal_recent %}
+            <tr>
+              <td style="font-family:monospace;font-size:11px">{{ j.numero }}</td>
+              <td><span class="badge bg-secondary bg-opacity-15 text-secondary" style="font-size:10px">{{ j.type_operation }}</span></td>
+              <td>
+                <span class="badge {% if j.type_flux == 'ENTREE' %}bg-success{% else %}bg-danger{% endif %} bg-opacity-15
+                             {% if j.type_flux == 'ENTREE' %}text-success{% else %}text-danger{% endif %}"
+                      style="font-size:10px">{{ j.type_flux }}</span>
+              </td>
+              <td class="text-end fw-bold {% if j.type_flux == 'ENTREE' %}text-success{% else %}text-danger{% endif %}">
+                {% if j.type_flux == 'ENTREE' %}+{% else %}−{% endif %}{{ j.montant_gnf|floatformat:0 }}
+              </td>
+              <td style="font-size:11px;color:#6c757d">{{ j.created_at|date:"d M H:i" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center text-muted py-4">Aucune écriture sur cette période</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dépenses par catégorie (camembert textuel) -->
+  <div class="col-md-5">
+    <div class="table-card">
+      <div class="table-card-header">
+        <h6><i class="bi bi-pie-chart me-2 text-muted"></i>Top Dépenses</h6>
+        <a href="{% url 'web:depenses_liste' %}" class="btn btn-sm btn-outline-secondary">Détail</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead><tr><th>Catégorie</th><th class="text-end">Total GNF</th></tr></thead>
+          <tbody>
+            {% for d in dep_par_categorie %}
+            <tr>
+              <td style="font-size:13px">{{ d.categorie__nom|default:"Sans catégorie" }}</td>
+              <td class="text-end fw-bold text-danger">{{ d.total|floatformat:0 }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="2" class="text-center text-muted py-3">Aucune dépense</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Bouton Nouvelle dépense -->
+      <div class="p-3 border-top">
+        <a href="{% url 'web:depenses_nouvelle' %}"
+           class="btn w-100 fw-bold" style="background:#e8593c;color:#fff;border-radius:10px">
+          <i class="bi bi-plus-circle me-2"></i>Nouvelle Dépense
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+{% block extra_js %}
+{{ labels_json|json_script:"labels-data" }}
+{{ ventes_json|json_script:"ventes-data" }}
+{{ depenses_json|json_script:"depenses-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+const labels  = JSON.parse(document.getElementById('labels-data').textContent);
+const ventes  = JSON.parse(document.getElementById('ventes-data').textContent);
+const depenses= JSON.parse(document.getElementById('depenses-data').textContent);
+
+new Chart(document.getElementById('chartVentesDepenses'), {
+  type: 'bar',
+  data: {
+    labels: labels,
+    datasets: [
+      {
+        label: 'Ventes (GNF)',
+        data: ventes,
+        backgroundColor: 'rgba(30,132,73,.7)',
+        borderRadius: 6,
+        borderSkipped: false,
+      },
+      {
+        label: 'Dépenses (GNF)',
+        data: depenses,
+        backgroundColor: 'rgba(192,57,43,.7)',
+        borderRadius: 6,
+        borderSkipped: false,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: ${ctx.raw.toLocaleString('fr')} GNF`
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: v => v >= 1000000
+            ? (v/1000000).toFixed(1)+'M'
+            : v >= 1000 ? (v/1000).toFixed(0)+'K' : v
+        },
+        grid: { color: 'rgba(0,0,0,.05)' }
+      },
+      x: { grid: { display: false } }
+    }
+  }
+});
+</script>
+{% endblock %}

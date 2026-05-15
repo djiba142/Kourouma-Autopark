@@ -1,0 +1,193 @@
+{% extends 'web/base.html' %}
+{% load humanize %}
+{% block title %}Objectifs Ventes{% endblock %}
+{% block page_title %}🎯 Objectifs de Vente{% endblock %}
+
+{% block extra_css %}
+<style>
+  .obj-bar-wrap { height: 28px; background: #e9ecef; border-radius: 14px; overflow: hidden; position: relative; }
+  .obj-bar-fill { height: 100%; border-radius: 14px; transition: width 1s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 12px; }
+  .obj-bar-label { font-size: 12px; font-weight: 700; color: #fff; }
+  .hero-obj { background: linear-gradient(135deg,#1a3a5c,#2d5a8e); color:#fff; border-radius:20px; padding:2rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero objectif du mois -->
+<div class="hero-obj mb-4">
+  <div class="row align-items-center g-4">
+    <div class="col-md-7">
+      <div style="font-size:12px;opacity:.7;text-transform:uppercase;letter-spacing:.06em;font-weight:600">
+        Objectif {{ mois }}
+      </div>
+      <div style="font-size:2.2rem;font-weight:700;margin:8px 0">
+        {{ ventes|floatformat:0 }} GNF
+        <span style="font-size:1rem;opacity:.6;font-weight:400">
+          / {{ objectif|floatformat:0 }} GNF
+        </span>
+      </div>
+
+      <!-- Barre de progression -->
+      <div class="obj-bar-wrap mb-3">
+        <div class="obj-bar-fill {% if depasse %}bg-success{% elif pct >= 75 %}bg-warning{% else %}bg-danger{% endif %}"
+             data-bsg-width="{{ pct }}%">
+          {% if pct > 15 %}
+          <span class="obj-bar-label">{{ pct }}%</span>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if depasse %}
+      <div style="background:rgba(30,132,73,.2);border-radius:10px;padding:10px 14px;font-size:13px">
+        🎉 Objectif dépassé de {{ ventes|floatformat:0 }} − {{ objectif|floatformat:0 }} = <strong>{{ ventes|add:objectif|floatformat:0 }}</strong> GNF de bonus !
+      </div>
+      {% elif objectif > 0 %}
+      <div style="opacity:.8;font-size:13px">
+        Il reste <strong>{{ manque|floatformat:0 }} GNF</strong> à réaliser pour atteindre l'objectif.
+      </div>
+      {% else %}
+      <div style="opacity:.6;font-size:13px">Aucun objectif fixé pour ce mois.</div>
+      {% endif %}
+    </div>
+
+    <!-- Formulaire mise à jour objectif (Admin) -->
+    <div class="col-md-5">
+      {% if is_admin %}
+      <div style="background:rgba(255,255,255,.1);border-radius:14px;padding:1.25rem">
+        <div style="font-size:12px;opacity:.8;font-weight:600;margin-bottom:10px">
+          <i class="bi bi-pencil me-1"></i>Modifier l'objectif du mois
+        </div>
+        <form method="post" action="{% url 'web:objectif_update' %}">
+          {% csrf_token %}
+          <div class="input-group">
+            <input type="number" name="objectif" class="form-control"
+                   value="{{ objectif|floatformat:0 }}"
+                   placeholder="Ex: 50000000" min="0" step="100000"
+                   style="border-radius:10px 0 0 10px">
+            <span class="input-group-text" style="background:rgba(255,255,255,.15);color:#fff;border:none">GNF</span>
+            <button type="submit" class="btn fw-bold"
+                    style="background:#e8593c;color:#fff;border-radius:0 10px 10px 0;border:none">
+              Sauver
+            </button>
+          </div>
+        </form>
+      </div>
+      {% else %}
+      <div style="background:rgba(255,255,255,.08);border-radius:14px;padding:1.25rem;text-align:center">
+        <div style="font-size:3rem;font-weight:700">{{ pct }}%</div>
+        <div style="font-size:13px;opacity:.7">de l'objectif atteint</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- KPIs -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Réalisé</div>
+      <div class="kpi-val {% if pct >= 100 %}color-success{% else %}color-dark{% endif %}" style="font-size:1.1rem">
+        {{ ventes|floatformat:0 }}
+      </div>
+      <div style="font-size:10px;color:#6c757d">GNF ce mois</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Objectif</div>
+      <div class="kpi-val" style="font-size:1.1rem">{{ objectif|floatformat:0 }}</div>
+      <div style="font-size:10px;color:#6c757d">GNF fixé</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Progression</div>
+      <div class="kpi-val {% if pct >= 100 %}color-success{% elif pct >= 75 %}color-warning{% else %}color-danger{% endif %}">
+        {{ pct }}%
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card text-center">
+      <div class="kpi-label">Restant</div>
+      <div class="kpi-val" style="font-size:1.1rem;color:#e8593c">
+        {% if depasse %}0{% else %}{{ manque|floatformat:0 }}{% endif %}
+      </div>
+      <div style="font-size:10px;color:#6c757d">GNF à réaliser</div>
+    </div>
+  </div>
+</div>
+
+<!-- Graphique historique 6 mois -->
+<div class="card border-0 shadow-sm" style="border-radius:14px">
+  <div class="card-body p-4">
+    <h6 class="fw-bold mb-3">
+      <i class="bi bi-bar-chart me-2 text-muted"></i>Ventes — 6 derniers mois
+    </h6>
+    <canvas id="chartObjectifs" height="70"></canvas>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+{{ hist_labels_json|json_script:"hist-labels" }}
+{{ hist_values_json|json_script:"hist-values" }}
+{{ objectif|json_script:"goal-value" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+const labels  = JSON.parse(document.getElementById('hist-labels').textContent);
+const totaux  = JSON.parse(document.getElementById('hist-values').textContent);
+const monthlyGoal = JSON.parse(document.getElementById('goal-value').textContent);
+
+new Chart(document.getElementById('chartObjectifs'), {
+  type: 'bar',
+  data: {
+    labels,
+    datasets: [
+      {
+        label: 'Ventes réalisées (GNF)',
+        data: totaux,
+        backgroundColor: totaux.map(v => v >= monthlyGoal && monthlyGoal > 0
+          ? 'rgba(30,132,73,.75)' : 'rgba(26,58,92,.65)'),
+        borderRadius: 8, borderSkipped: false,
+      },
+      {
+        label: 'Objectif (GNF)',
+        data: totaux.map(() => monthlyGoal),
+        type: 'line',
+        borderColor: '#e8593c',
+        borderDash: [6, 3],
+        borderWidth: 2,
+        pointRadius: 0,
+        fill: false,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: {
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString('fr')} GNF`
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: v => v >= 1000000 ? (v/1000000).toFixed(1)+'M'
+                       : v >= 1000 ? (v/1000).toFixed(0)+'K' : v
+        },
+        grid: { color: 'rgba(0,0,0,.04)' }
+      },
+      x: { grid: { display: false } }
+    }
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends 'web/base.html' %}
+{% load humanize %}
+{% block title %}Réapprovisionnement Auto{% endblock %}
+{% block page_title %}🤖 Réapprovisionnement Automatique IA{% endblock %}
+
+{% block content %}
+
+{% if erreur %}
+<div class="alert alert-warning mb-3" style="border-radius:12px">
+  <i class="bi bi-exclamation-triangle me-2"></i>{{ erreur }}
+</div>
+{% endif %}
+
+<div class="card border-0 shadow-sm mb-4"
+     style="border-radius:14px;background:linear-gradient(135deg,#1a3a5c,#2d5a8e);color:#fff">
+  <div class="card-body p-4">
+    <div class="row align-items-center">
+      <div class="col">
+        <h5 class="fw-bold mb-1">Analyse prédictive J+7</h5>
+        <p class="mb-0" style="opacity:.8;font-size:13px">
+          {{ nb_alertes }} produit{{ nb_alertes|pluralize }} nécessite{{ nb_alertes|pluralize:"nt" }}
+          un réapprovisionnement dans les 7 prochains jours.
+        </p>
+      </div>
+      <div class="col-auto"><div style="font-size:3rem">📦</div></div>
+    </div>
+  </div>
+</div>
+
+{% if suggestions %}
+<form method="post" action="{% url 'web:reappro_valider' %}">
+{% csrf_token %}
+
+<div class="card border-0 shadow-sm mb-3" style="border-radius:12px">
+  <div class="card-body p-3">
+    <div class="row align-items-end g-3">
+      <div class="col-md-5">
+        <label class="form-label fw-semibold" style="font-size:13px">Fournisseur</label>
+        <select name="fournisseur_id" class="form-select" required>
+          <option value="">— Sélectionner —</option>
+          {% for f in fournisseurs %}
+          <option value="{{ f.pk }}">{{ f.nom }} ({{ f.pays }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="tout-cocher"
+                 onchange="document.querySelectorAll('.prod-check').forEach(c=>c.checked=this.checked);updateTotal()">
+          <label class="form-check-label fw-semibold" for="tout-cocher" style="font-size:13px">
+            Tout sélectionner
+          </label>
+        </div>
+      </div>
+      <div class="col-auto ms-auto">
+        <button type="submit" class="btn fw-bold px-4"
+                style="background:#1e8449;color:#fff;border-radius:10px">
+          <i class="bi bi-check-circle me-2"></i>Créer la commande achat
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="table-card">
+  <div class="table-card-header">
+    <h6><i class="bi bi-list-check me-2 text-muted"></i>Produits à réapprovisionner</h6>
+    <span class="badge bg-danger bg-opacity-15 text-danger">{{ nb_alertes }} alerte{{ nb_alertes|pluralize }}</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead>
+        <tr>
+          <th style="width:40px"></th>
+          <th>Produit</th>
+          <th class="text-center">Stock</th>
+          <th class="text-center">Prévu J+7</th>
+          <th class="text-center">Manque</th>
+          <th class="text-center">Tendance</th>
+          <th style="width:130px">Qté commander</th>
+          <th class="text-end">Coût</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in suggestions %}
+        <tr>
+          <td>
+            <input type="checkbox" class="form-check-input prod-check"
+                   name="produit_id" value="{{ s.produit_id }}" checked
+                   onchange="updateTotal()">
+          </td>
+          <td>
+            <div class="fw-bold" style="font-size:13px">{{ s.produit_nom }}</div>
+            <div class="text-muted" style="font-size:11px">{{ s.reference }}</div>
+          </td>
+          <td class="text-center fw-bold text-danger fs-5">{{ s.stock_actuel|floatformat:0 }}</td>
+          <td class="text-center fw-bold text-primary">{{ s.vente_prevue|floatformat:1 }}</td>
+          <td class="text-center">
+            <span class="badge bg-danger" style="font-size:12px;padding:5px 10px">
+              {{ s.manque|floatformat:0 }}
+            </span>
+          </td>
+          <td class="text-center">
+            {% if s.tendance == 'hausse' %}
+              <span class="badge bg-success bg-opacity-15 text-success">↑ Hausse</span>
+            {% elif s.tendance == 'baisse' %}
+              <span class="badge bg-warning text-dark">↓ Baisse</span>
+            {% else %}
+              <span class="badge bg-secondary bg-opacity-15 text-secondary">→ Stable</span>
+            {% endif %}
+          </td>
+          <td>
+            <input type="number" name="quantite"
+                   class="form-control form-control-sm fw-bold text-center qte-input"
+                   value="{{ s.qte_suggeree }}" min="0"
+                   data-prix="{{ s.prix_achat }}"
+                   oninput="updateTotal()" style="border-radius:8px">
+          </td>
+          <td class="text-end fw-bold" style="color:#1a3a5c">
+            <span class="cout-ligne">0</span> GNF
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot class="table-light">
+        <tr>
+          <td colspan="7" class="text-end fw-bold">COÛT TOTAL ESTIMÉ</td>
+          <td class="text-end fw-bold fs-5" style="color:#1a3a5c" id="total-gnf">0 GNF</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+</form>
+
+{% else %}
+<div class="text-center py-5">
+  <i class="bi bi-check-circle" style="font-size:4rem;color:#1e8449;opacity:.5"></i>
+  <h4 class="mt-3 fw-bold text-success">Stock suffisant pour les 7 prochains jours ✓</h4>
+  <p class="text-muted">Le modèle IA ne détecte aucune rupture prévue.</p>
+  <a href="{% url 'web:ia_ventes' %}" class="btn btn-outline-primary mt-2" style="border-radius:10px">
+    Voir les prévisions détaillées
+  </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateTotal() {
+  let total = 0;
+  document.querySelectorAll('tbody tr').forEach(row => {
+    const cb   = row.querySelector('.prod-check');
+    const inp  = row.querySelector('.qte-input');
+    const span = row.querySelector('.cout-ligne');
+    if (!inp) return;
+    const qte  = parseInt(inp.value) || 0;
+    const prix = parseFloat(inp.dataset.prix) || 0;
+    const cout = qte * prix;
+    if (span) span.textContent = cout.toLocaleString('fr');
+    if (cb?.checked) total += cout;
+  });
+  document.getElementById('total-gnf').textContent = total.toLocaleString('fr') + ' GNF';
+}
+updateTotal();
+</script>
+{% endblock %}

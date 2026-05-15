@@ -1,0 +1,165 @@
+{% extends 'web/base.html' %}
+{% block title %}Analyse Rentabilité{% endblock %}
+{% block page_title %}📊 Analyse Rentabilité — Matrice BCG{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-end mb-4">
+  <a href="{% url 'web:dashboard_ia' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Retour IA
+  </a>
+</div>
+
+{% if erreur %}
+<div class="alert alert-warning">
+  <i class="bi bi-exclamation-triangle me-2"></i>{{ erreur }}
+</div>
+{% endif %}
+
+<!-- KPIs BCG -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="kpi-card text-center" style="border-left:4px solid #1e8449">
+      <div style="font-size:1.5rem">⭐</div>
+      <div class="kpi-label mt-1">STAR</div>
+      <div class="kpi-val text-success">{{ stars|length }}</div>
+      <div class="text-muted" style="font-size:10px">Marge haute + Volume élevé</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card text-center" style="border-left:4px solid #185FA5">
+      <div style="font-size:1.5rem">🐄</div>
+      <div class="kpi-label mt-1">VACHE</div>
+      <div class="kpi-val" style="color:#185FA5">{{ vaches|length }}</div>
+      <div class="text-muted" style="font-size:10px">Marge haute + Volume faible</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card text-center" style="border-left:4px solid #BA7517">
+      <div style="font-size:1.5rem">❓</div>
+      <div class="kpi-label mt-1">DILEMME</div>
+      <div class="kpi-val" style="color:#BA7517">{{ dilemmes|length }}</div>
+      <div class="text-muted" style="font-size:10px">Marge faible + Volume élevé</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card text-center" style="border-left:4px solid #c0392b">
+      <div style="font-size:1.5rem">💀</div>
+      <div class="kpi-label mt-1">POIDS MORT</div>
+      <div class="kpi-val text-danger">{{ poids_morts|length }}</div>
+      <div class="text-muted" style="font-size:10px">Marge faible + Volume faible</div>
+    </div>
+  </div>
+</div>
+
+<!-- Scatter plot -->
+{% if resultats %}
+<div class="card border-0 shadow-sm mb-4" style="border-radius:14px">
+  <div class="card-body p-4">
+    <h6 class="fw-bold mb-1">Matrice Marge vs Volume (KMeans clustering)</h6>
+    <p class="text-muted mb-3" style="font-size:12px">
+      Axe X = taux de marge (%) · Axe Y = volume vendu (unités)
+    </p>
+    <canvas id="chartBCG" height="70"></canvas>
+  </div>
+</div>
+{% endif %}
+
+<!-- Tableau détaillé -->
+<div class="table-card">
+  <div class="table-card-header">
+    <h6><i class="bi bi-table me-2 text-muted"></i>Classement complet</h6>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th class="text-center">Catégorie</th>
+          <th class="text-center">Taux marge %</th>
+          <th class="text-center">Volume vendu</th>
+          <th class="text-center">Rotation</th>
+          <th class="text-center">Stock</th>
+          <th>Conseil IA</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in resultats %}
+        <tr>
+          <td>
+            <div class="fw-semibold" style="font-size:13px">{{ r.nom }}</div>
+            <div class="text-muted" style="font-size:11px">{{ r.reference }}</div>
+          </td>
+          <td class="text-center">
+            <span class="fw-bold" style="font-size:1.1rem">{{ r.emoji }}</span>
+            <div class="risk-text-{{ r.categorie|slugify }}" style="font-size:10px; font-weight:700">
+              {{ r.categorie }}
+            </div>
+          </td>
+          <td class="text-center fw-bold {% if r.taux_marge >= 30 %}text-success{% elif r.taux_marge > 0 %}text-warning{% else %}text-danger{% endif %}">
+            {{ r.taux_marge|floatformat:1 }}%
+          </td>
+          <td class="text-center">{{ r.volume|floatformat:0 }}</td>
+          <td class="text-center text-muted">{{ r.rotation|floatformat:2 }}</td>
+          <td class="text-center {% if r.stock == 0 %}text-danger fw-bold{% endif %}">
+            {{ r.stock|floatformat:0 }}
+          </td>
+          <td style="font-size:12px;color:#6c757d">{{ r.conseil }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center text-muted py-4">
+          Aucun produit actif. Créez des produits avec prix d'achat et de vente.
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+{{ scatter_data_json|json_script:"scatter-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+const raw = JSON.parse(document.getElementById('scatter-data').textContent);
+const colors = { STAR:'#1e8449', VACHE:'#185FA5', DILEMME:'#BA7517', POIDS_MORT:'#c0392b' };
+
+// Grouper par catégorie
+const datasets = ['STAR','VACHE','DILEMME','POIDS_MORT'].map(cat => ({
+  label: cat,
+  data: raw.filter(r => r.cat === cat).map(r => ({ x: r.x, y: r.y, nom: r.nom })),
+  backgroundColor: colors[cat] + 'CC',
+  borderColor: colors[cat],
+  pointRadius: 8,
+  pointHoverRadius: 11,
+}));
+
+new Chart(document.getElementById('chartBCG'), {
+  type: 'scatter',
+  data: { datasets },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: {
+        callbacks: {
+          label: ctx => `${ctx.dataset.label} — ${ctx.raw.nom} (marge:${ctx.raw.x}%, vol:${ctx.raw.y})`
+        }
+      }
+    },
+    scales: {
+      x: {
+        title: { display: true, text: 'Taux de marge (%)' },
+        grid: { color: 'rgba(0,0,0,.04)' }
+      },
+      y: {
+        title: { display: true, text: 'Volume vendu (unités)' },
+        beginAtZero: true,
+        grid: { color: 'rgba(0,0,0,.04)' }
+      }
+    }
+  }
+});
+</script>
+{% endblock %}

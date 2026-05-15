@@ -1,0 +1,61 @@
+{% extends 'web/base.html' %}
+{% block title %}Fournisseurs{% endblock %}
+{% block page_title %}Fournisseurs{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-end mb-3">
+  <a href="{% url 'web:fournisseur_nouveau' %}" class="btn fw-bold px-4"
+     style="background:#1a3a5c;color:#fff;border-radius:10px">
+    <i class="bi bi-plus-circle me-2"></i>Nouveau Fournisseur
+  </a>
+</div>
+
+<div class="table-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead>
+        <tr>
+          <th>Fournisseur</th><th>Pays</th><th>Type</th>
+          <th>Devise</th><th>Téléphone</th><th>Email</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in fournisseurs %}
+        <tr>
+          <td>
+            <div class="fw-bold" style="font-size:14px">{{ f.nom }}</div>
+            {% if f.adresse %}
+            <div class="text-muted" style="font-size:11px">{{ f.adresse|truncatechars:40 }}</div>
+            {% endif %}
+          </td>
+          <td style="font-size:13px">{{ f.pays }}</td>
+          <td>
+            <span class="badge {% if f.type == 'INTERNATIONAL' %}bg-primary{% else %}bg-secondary{% endif %} bg-opacity-15
+                         {% if f.type == 'INTERNATIONAL' %}text-primary{% else %}text-secondary{% endif %}"
+                  style="font-size:10px">
+              {{ f.get_type_display }}
+            </span>
+          </td>
+          <td><span class="badge bg-light text-dark border" style="font-size:11px">{{ f.devise_par_defaut }}</span></td>
+          <td style="font-size:13px">{{ f.telephone|default:"—" }}</td>
+          <td style="font-size:12px;color:#6c757d">{{ f.email|default:"—" }}</td>
+          <td>
+            <a href="{% url 'web:achats_liste' %}?fourn={{ f.pk }}"
+               class="btn btn-sm btn-outline-primary" title="Voir ses commandes">
+              <i class="bi bi-basket"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center text-muted py-5">
+            <i class="bi bi-truck" style="font-size:2.5rem;opacity:.3"></i>
+            <p class="mt-2 mb-0">Aucun fournisseur enregistré</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

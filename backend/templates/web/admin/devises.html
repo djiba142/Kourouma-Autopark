@@ -1,0 +1,143 @@
+{% extends 'web/base.html' %}
+{% load humanize %}
+{% block title %}Taux de Change{% endblock %}
+{% block page_title %}💱 Taux de Change Multi-devises{% endblock %}
+
+{% block content %}
+
+<!-- Statut API -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div class="d-flex align-items-center gap-2">
+    <div class="{% if depuis_api %}bg-success{% else %}bg-warning{% endif %}"
+         style="width:10px;height:10px;border-radius:50%"></div>
+    <span style="font-size:13px;color:#6c757d">
+      {% if depuis_api %}Taux en direct{% else %}Taux de repli{% endif %}
+      — Mis à jour : {{ mis_a_jour|date:"d/m/Y H:i"|default:"—" }}
+      (cache {{ cache_valide|yesno:'valide,expiré' }}, 6h)
+    </span>
+  </div>
+  <a href="{% url 'web:devises_refresh' %}"
+     class="btn btn-sm btn-outline-primary fw-bold" style="border-radius:8px">
+    <i class="bi bi-arrow-clockwise me-1"></i>Actualiser
+  </a>
+</div>
+
+<!-- Grille des taux -->
+<div class="row g-3 mb-4">
+  {% for code, montant_gnf in taux.items %}
+  {% if code != 'GNF' %}
+  <div class="col-6 col-md-4 col-lg-2">
+    <div class="kpi-card text-center">
+      <div style="font-size:1.5rem;margin-bottom:4px">
+        {% if code == 'USD' %}🇺🇸
+        {% elif code == 'EUR' %}🇪🇺
+        {% elif code == 'CNY' %}🇨🇳
+        {% elif code == 'GBP' %}🇬🇧
+        {% elif code == 'XOF' %}🌍
+        {% else %}💰{% endif %}
+      </div>
+      <div class="kpi-label">{{ code }}</div>
+      <div class="fw-bold" style="font-size:1.1rem;color:#1a3a5c;margin:4px 0">
+        {{ montant_gnf|floatformat:0 }}
+      </div>
+      <div style="font-size:10px;color:#6c757d">GNF / 1 {{ code }}</div>
+      <!-- Équivalence inverse -->
+      <div style="margin-top:6px;font-size:10px;background:#f8f9fa;
+                  border-radius:6px;padding:3px 6px;color:#6c757d">
+        1M GNF = {{ equivalences|get_item:code|floatformat:2 }} {{ code }}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+</div>
+
+<!-- Convertisseur interactif -->
+<div class="card border-0 shadow-sm" style="border-radius:16px">
+  <div class="card-body p-4">
+    <h6 class="fw-bold mb-4">
+      <i class="bi bi-calculator me-2 text-muted"></i>Convertisseur
+    </h6>
+
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label fw-semibold" style="font-size:13px">Montant</label>
+        <input type="number" id="montant-input" class="form-control fw-bold"
+               style="font-size:1.2rem" value="1" min="0" step="0.01"
+               oninput="convertir()"
+               placeholder="0">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold" style="font-size:13px">De</label>
+        <select id="de-select" class="form-select" onchange="convertir()">
+          {% for code, label in labels.items %}
+          <option value="{{ code }}" {% if code == 'USD' %}selected{% endif %}>
+            {{ code }} — {{ label }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto d-flex align-items-end pb-1">
+        <button onclick="permuter()" class="btn btn-outline-secondary" style="border-radius:10px">
+          <i class="bi bi-arrow-left-right"></i>
+        </button>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold" style="font-size:13px">Vers</label>
+        <select id="vers-select" class="form-select" onchange="convertir()">
+          {% for code, label in labels.items %}
+          <option value="{{ code }}" {% if code == 'GNF' %}selected{% endif %}>
+            {{ code }} — {{ label }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label fw-semibold" style="font-size:13px">Résultat</label>
+        <div id="resultat"
+             class="form-control fw-bold text-center"
+             style="background:#EAF3DE;color:#1e8449;font-size:1.1rem;border-color:#1e8449;border-radius:10px">
+          —
+        </div>
+      </div>
+    </div>
+
+    <div id="detail-taux" class="text-muted mt-2" style="font-size:12px"></div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+{{ taux|json_script:"taux-data" }}
+<script>
+const TAUX = JSON.parse(document.getElementById('taux-data').textContent);
+
+function convertir() {
+  const m    = parseFloat(document.getElementById('montant-input').value) || 0;
+  const de   = document.getElementById('de-select').value;
+  const vers = document.getElementById('vers-select').value;
+
+  const gnf       = m * (TAUX[de]   || 1);
+  const resultat  = gnf / (TAUX[vers] || 1);
+  const taux_affiche = (TAUX[de] / (TAUX[vers] || 1)).toFixed(4);
+
+  document.getElementById('resultat').textContent =
+    resultat.toLocaleString('fr', { maximumFractionDigits: 2 }) + ' ' + vers;
+  document.getElementById('detail-taux').textContent =
+    `Taux : 1 ${de} = ${taux_affiche} ${vers}`;
+}
+
+function permuter() {
+  const de   = document.getElementById('de-select');
+  const vers = document.getElementById('vers-select');
+  const tmp  = de.value;
+  de.value   = vers.value;
+  vers.value = tmp;
+  convertir();
+}
+
+// Conversion initiale
+convertir();
+</script>
+{% endblock %}

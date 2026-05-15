@@ -1,0 +1,105 @@
+{% extends 'web/base.html' %}
+{% block title %}Inventaire{% endblock %}
+{% block page_title %}Gestion des Stocks{% endblock %}
+
+{% block content %}
+
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h5 class="mb-0" style="color: #1a3a5c;">Inventaire</h5>
+        <small class="text-muted">{{ stocks.count }} produit{{ stocks.count|pluralize }} en stock</small>
+      </div>
+      <a href="{% url 'web:stock_entree' %}" class="btn fw-bold" style="background: #27ae60; color: #fff;">
+        <i class="bi bi-plus-circle me-2"></i>Entrée Stock
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Filtres -->
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card" style="border-radius: 12px; border: 1px solid #e9ecef;">
+      <div class="card-body p-3">
+        <form method="get" class="row g-2">
+          <div class="col-md-4">
+            <input type="text" class="form-control" name="q" placeholder="Rechercher..." value="{{ search }}">
+          </div>
+          <div class="col-md-4">
+            <select class="form-select" name="localisation">
+              <option value="">Toutes les localisations</option>
+              {% for loc in localisations %}
+              <option value="{{ loc.id }}" {% if localisation_select == loc.id|stringformat:"s" %}selected{% endif %}>
+                {{ loc.nom }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-outline-primary w-100">
+              <i class="bi bi-search me-2"></i>Filtrer
+            </button>
+          </div>
+          <div class="col-md-2">
+            <a href="?alerte=1" class="btn btn-outline-danger w-100">
+              <i class="bi bi-exclamation-triangle me-2"></i>Alertes
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tableau stocks -->
+<div class="row">
+  <div class="col-12">
+    <div class="table-card">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th style="width: 30%">Produit</th>
+              <th style="width: 15%">Référence</th>
+              <th style="width: 15%">Localisation</th>
+              <th style="width: 12%">Quantité</th>
+              <th style="width: 12%">Seuil</th>
+              <th style="width: 16%">Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for stock in stocks %}
+            <tr>
+              <td><strong>{{ stock.produit.nom }}</strong></td>
+              <td style="font-family: monospace; font-size: 12px;">{{ stock.produit.reference }}</td>
+              <td>{{ stock.localisation.nom }}</td>
+              <td class="fw-bold">{{ stock.quantite }}</td>
+              <td>{{ stock.produit.seuil_alerte }}</td>
+              <td>
+                {% if stock.quantite == 0 %}
+                <span class="badge bg-danger">Rupture</span>
+                {% elif stock.quantite <= stock.produit.seuil_alerte %}
+                <span class="badge bg-warning text-dark">Alerte</span>
+                {% else %}
+                <span class="badge bg-success">OK</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center text-muted py-4">
+                <i class="bi bi-boxes" style="font-size: 24px; opacity: .5;"></i><br>
+                Aucun produit
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

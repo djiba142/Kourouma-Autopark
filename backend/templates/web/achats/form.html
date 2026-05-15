@@ -1,0 +1,251 @@
+{% extends 'web/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card border-0 shadow-lg" style="border-radius:20px; overflow: hidden;">
+            <!-- Header avec dégradé -->
+            <div class="card-header border-0 py-4" style="background: linear-gradient(135deg, #1a3a5c 0%, #2c5282 100%);">
+                <div class="d-flex align-items-center">
+                    <div class="bg-white bg-opacity-25 p-3 rounded-circle me-3">
+                        <i class="bi bi-cart-plus text-white fs-4"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-0 fw-bold text-white">Nouveau Bon de Commande</h4>
+                        <p class="text-white-50 mb-0 small">Remplissez les détails pour créer une commande fournisseur</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <form method="post" id="achat-form">
+                    {% csrf_token %}
+                    
+                    <div class="row g-4 mb-5">
+                        <!-- Fournisseur -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-muted small text-uppercase ls-1">Fournisseur</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-person-badge"></i></span>
+                                <select name="fournisseur_id" class="form-select border-0 bg-light py-2" required style="border-radius: 0 10px 10px 0;">
+                                    <option value="">-- Sélectionner un fournisseur --</option>
+                                    {% for f in fournisseurs %}
+                                    <option value="{{ f.pk }}">{{ f.nom }} ({{ f.pays }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Date -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-muted small text-uppercase ls-1">Date de Commande</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-calendar-event"></i></span>
+                                <input type="date" name="date_commande" class="form-control border-0 bg-light py-2" required value="{% now 'Y-m-d' %}" style="border-radius: 0 10px 10px 0;">
+                            </div>
+                        </div>
+
+                        <!-- Devise & Taux -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-muted small text-uppercase ls-1">Devise</label>
+                            <select name="devise" id="devise-select" class="form-select border-0 bg-light py-2" style="border-radius: 10px;">
+                                <option value="GNF">Franc Guinéen (GNF)</option>
+                                <option value="USD">Dollar US (USD)</option>
+                                <option value="EUR">Euro (EUR)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-muted small text-uppercase ls-1">Taux de Change (1 <span class="devise-label">GNF</span> = ? GNF)</label>
+                            <input type="number" step="0.000001" name="taux_change" id="taux-input" class="form-control border-0 bg-light py-2" required value="1" style="border-radius: 10px;">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-muted small text-uppercase ls-1">Magasin de réception</label>
+                            <select name="localisation_id" class="form-select border-0 bg-light py-2" style="border-radius: 10px;">
+                                {% for l in localisations %}
+                                <option value="{{ l.id }}">{{ l.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Liste des produits -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold text-dark mb-0">Articles de la commande</h5>
+                            <button type="button" class="btn btn-outline-primary btn-sm fw-bold px-3" id="add-row" style="border-radius: 8px;">
+                                <i class="bi bi-plus-lg me-1"></i>Ajouter une ligne
+                            </button>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-borderless align-middle" id="table-produits">
+                                <thead class="text-muted small text-uppercase ls-1">
+                                    <tr>
+                                        <th style="width: 45%;">Produit</th>
+                                        <th style="width: 15%;">Qté (Cartons)</th>
+                                        <th style="width: 20%;">Prix Unit. (<span class="devise-symbol">GNF</span>)</th>
+                                        <th style="width: 15%;">Sous-total</th>
+                                        <th style="width: 5%;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="ligne-produit animate__animated animate__fadeIn">
+                                        <td>
+                                            <input list="produits-list" name="produit_nom" class="form-control border-0 bg-light input-produit" required style="border-radius: 8px;" placeholder="Rechercher ou saisir un produit...">
+                                            <datalist id="produits-list">
+                                                {% for p in produits %}
+                                                <option value="{{ p.nom }} ({{ p.reference }})" data-id="{{ p.id }}" data-price="{{ p.prix_achat_devise|default:0 }}">
+                                                {% endfor %}
+                                            </datalist>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="quantite_cartons" class="form-control border-0 bg-light input-qte" min="1" required style="border-radius: 8px;" placeholder="0">
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.01" name="prix_unitaire_devise" class="form-control border-0 bg-light input-prix" required style="border-radius: 8px;" placeholder="0.00">
+                                        </td>
+                                        <td class="text-end fw-bold text-dark">
+                                            <span class="sous-total">0.00</span>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="border-top">
+                                        <td colspan="3" class="text-end py-3 fw-bold text-muted">TOTAL DE LA COMMANDE :</td>
+                                        <td class="text-end py-3 fw-bold text-primary fs-5">
+                                            <span id="total-global">0.00</span> <span class="devise-symbol">GNF</span>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="mb-5">
+                        <label class="form-label fw-bold text-muted small text-uppercase ls-1">Instructions & Conditions</label>
+                        <textarea name="notes" class="form-control border-0 bg-light" rows="3" placeholder="Notes particulières pour le fournisseur ou l'équipe de réception..." style="border-radius: 12px;"></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'web:achats_liste' %}" class="btn btn-link text-muted text-decoration-none">
+                            <i class="bi bi-arrow-left me-1"></i> Retour à la liste
+                        </a>
+                        <button type="submit" class="btn btn-primary fw-bold px-5 py-3 shadow" style="border-radius: 15px; background: #1a3a5c; border: none;">
+                            Générer la commande <i class="bi bi-send-check ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .ls-1 { letter-spacing: 1px; }
+    .bg-light { background-color: #f8f9fa !important; }
+    .input-group-text { border-radius: 10px 0 0 10px; }
+    .form-select, .form-control { transition: all 0.2s; }
+    .form-select:focus, .form-control:focus { 
+        background-color: #fff !important; 
+        box-shadow: 0 0 0 3px rgba(26, 58, 92, 0.1);
+        border: 1px solid #1a3a5c !important;
+    }
+    .ligne-produit:hover { background-color: rgba(248, 249, 250, 0.5); }
+    #table-produits tfoot { border-top: 2px solid #f1f1f1 !important; }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tbody = document.querySelector('#table-produits tbody');
+        const addBtn = document.getElementById('add-row');
+        const totalSpan = document.getElementById('total-global');
+        const deviseSelect = document.getElementById('devise-select');
+        const deviseLabels = document.querySelectorAll('.devise-label');
+        const deviseSymbols = document.querySelectorAll('.devise-symbol');
+
+        // Mise à jour des labels de devise
+        deviseSelect.addEventListener('change', function() {
+            const val = this.value;
+            deviseLabels.forEach(l => l.textContent = val);
+            deviseSymbols.forEach(s => s.textContent = val);
+        });
+
+        // Ajouter une ligne
+        addBtn.addEventListener('click', function() {
+            const firstRow = tbody.querySelector('tr');
+            const newRow = firstRow.cloneNode(true);
+            
+            newRow.querySelectorAll('input').forEach(i => i.value = '');
+            newRow.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+            newRow.querySelector('.sous-total').textContent = '0.00';
+            
+            const delCol = newRow.querySelector('td:last-child');
+            delCol.innerHTML = '<button type="button" class="btn btn-sm btn-link text-danger remove-row"><i class="bi bi-trash"></i></button>';
+            
+            tbody.appendChild(newRow);
+            bindEvents(newRow);
+        });
+
+        // Suppression de ligne
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-row')) {
+                e.target.closest('tr').remove();
+                calculerTotal();
+            }
+        });
+
+        // Calculs
+        function bindEvents(row) {
+            const input = row.querySelector('.input-produit');
+            const qteInput = row.querySelector('.input-qte');
+            const prixInput = row.querySelector('.input-prix');
+            const sousTotal = row.querySelector('.sous-total');
+            const datalist = document.getElementById('produits-list');
+
+            // Pré-remplir le prix si correspondance trouvée dans le datalist
+            input.addEventListener('input', function() {
+                const val = this.value;
+                const options = datalist.options;
+                for (let i = 0; i < options.length; i++) {
+                    if (options[i].value === val) {
+                        if (options[i].dataset.price) {
+                            prixInput.value = options[i].dataset.price;
+                        }
+                        break;
+                    }
+                }
+                calculerLigne(row);
+            });
+
+            [qteInput, prixInput].forEach(input => {
+                input.addEventListener('input', () => calculerLigne(row));
+            });
+        }
+
+        function calculerLigne(row) {
+            const qte = parseFloat(row.querySelector('.input-qte').value) || 0;
+            const prix = parseFloat(row.querySelector('.input-prix').value) || 0;
+            const res = qte * prix;
+            row.querySelector('.sous-total').textContent = res.toLocaleString('fr-FR', {minimumFractionDigits: 2});
+            calculerTotal();
+        }
+
+        function calculerTotal() {
+            let total = 0;
+            tbody.querySelectorAll('tr').forEach(row => {
+                const qte = parseFloat(row.querySelector('.input-qte').value) || 0;
+                const prix = parseFloat(row.querySelector('.input-prix').value) || 0;
+                total += (qte * prix);
+            });
+            totalSpan.textContent = total.toLocaleString('fr-FR', {minimumFractionDigits: 2});
+        }
+
+        // Initialiser la première ligne
+        bindEvents(tbody.querySelector('tr'));
+    });
+</script>
+{% endblock %}

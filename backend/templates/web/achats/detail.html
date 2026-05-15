@@ -1,0 +1,222 @@
+{% extends 'web/base.html' %}
+{% load humanize %}
+{% block title %}{{ achat.reference }}{% endblock %}
+{% block page_title %}{{ achat.reference }}{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+
+  <!-- Détail PO -->
+  <div class="col-md-8">
+
+    <!-- En-tête -->
+    <div class="card border-0 shadow-sm mb-3" style="border-radius:14px">
+      <div class="card-body p-4">
+        <div class="row g-3">
+          <div class="col-6 col-md-3">
+            <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase">Fournisseur</div>
+            <div class="fw-bold mt-1">{{ achat.fournisseur.nom }}</div>
+            <div class="text-muted" style="font-size:11px">{{ achat.fournisseur.pays }}</div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase">Devise</div>
+            <div class="fw-bold mt-1">{{ achat.devise }}</div>
+            <div class="text-muted" style="font-size:11px">Taux : {{ achat.taux_change }}</div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase">Date commande</div>
+            <div class="fw-bold mt-1">{{ achat.date_commande|date:"d M Y" }}</div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase">Réception prévue</div>
+            <div class="fw-bold mt-1">
+              {{ achat.date_reception_prevue|date:"d M Y"|default:"—" }}
+            </div>
+          </div>
+          {% if achat.date_reception_reelle %}
+          <div class="col-6 col-md-3">
+            <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase">Reçue le</div>
+            <div class="fw-bold mt-1 text-success">{{ achat.date_reception_reelle|date:"d M Y H:i" }}</div>
+          </div>
+          {% endif %}
+          {% if achat.cree_par %}
+          <div class="col-6 col-md-3">
+            <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase">Créée par</div>
+            <div class="fw-bold mt-1">{{ achat.cree_par.nom }}</div>
+          </div>
+          {% endif %}
+        </div>
+        {% if achat.notes %}
+        <div class="mt-3 p-3 bg-light rounded" style="font-size:13px">
+          <i class="bi bi-sticky me-2 text-muted"></i>
+          {{ achat.notes|truncatechars:200 }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Articles -->
+    <div class="table-card">
+      <div class="table-card-header">
+        <h6><i class="bi bi-list-ul me-2 text-muted"></i>Articles commandés</h6>
+        <span class="badge bg-secondary bg-opacity-15 text-secondary">
+          {{ lignes|length }} réf.
+        </span>
+      </div>
+      <div class="table-responsive">
+        <table class="table mb-0 align-middle">
+          <thead>
+            <tr>
+              <th>Produit</th>
+              <th class="text-center">Cartons</th>
+              <th class="text-center">Pièces</th>
+              <th class="text-end">Prix / Ctn</th>
+              <th class="text-end">S/Total Devise</th>
+              <th class="text-end">S/Total GNF</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for l in lignes %}
+            <tr>
+              <td>
+                <div class="fw-semibold" style="font-size:13px">{{ l.produit.nom }}</div>
+                <div class="text-muted" style="font-size:11px">{{ l.produit.reference }}</div>
+              </td>
+              <td class="text-center fw-bold">{{ l.quantite_cartons }}</td>
+              <td class="text-center" style="color:#1a3a5c;font-weight:600">{{ l.quantite_pieces }}</td>
+              <td class="text-end" style="font-size:13px">
+                {{ l.prix_unitaire_devise|floatformat:2 }} {{ achat.devise }}
+              </td>
+              <td class="text-end fw-bold">
+                {{ l.sous_total_devise|floatformat:2 }} {{ achat.devise }}
+              </td>
+              <td class="text-end fw-bold" style="color:#1a3a5c">
+                {{ l.sous_total_gnf|floatformat:0 }} GNF
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot class="table-light">
+            <tr>
+              <td colspan="4" class="text-end fw-bold">TOTAL</td>
+              <td class="text-end fw-bold">
+                {{ achat.total_devise|floatformat:2 }} {{ achat.devise }}
+              </td>
+              <td class="text-end fw-bold fs-5" style="color:#1a3a5c">
+                {{ achat.total_gnf|floatformat:0 }} GNF
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar actions -->
+  <div class="col-md-4">
+
+    <!-- Statut -->
+    <div class="card border-0 shadow-sm mb-3" style="border-radius:14px">
+      <div class="card-body p-4">
+        <h6 class="fw-bold mb-3">Statut de la commande</h6>
+
+        <!-- Timeline statut -->
+        <div class="d-flex flex-column gap-2 mb-4">
+          {% for val, lbl in achat.STATUTS %}
+          <div class="d-flex align-items-center gap-2">
+            <div style="width:24px;height:24px;border-radius:50%;flex-shrink:0;
+                        --bg-color:{% if achat.statut == val %}#1a3a5c{% elif achat.statut == 'ANNULEE' %}#e9ecef{% elif val == 'BROUILLON' %}#1e8449{% elif val == 'ENVOYEE' and achat.statut != 'BROUILLON' %}#1e8449{% elif val == 'RECUE' and achat.statut == 'RECUE' %}#1e8449{% else %}#e9ecef{% endif %};
+                        background:var(--bg-color);
+                        display:flex;align-items:center;justify-content:center">
+              {% if achat.statut == val %}
+              <i class="bi bi-circle-fill text-white" style="font-size:8px"></i>
+              {% else %}
+              <i class="bi bi-check text-white" style="font-size:10px"></i>
+              {% endif %}
+            </div>
+            <span style="font-size:13px; --f-weight:{% if achat.statut == val %}700{% else %}400{% endif %}; font-weight:var(--f-weight);
+                         --f-color:{% if achat.statut == val %}#1a3a5c{% else %}#6c757d{% endif %}; color:var(--f-color)">
+              {{ lbl }}
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Boutons workflow -->
+        {% if achat.statut == 'BROUILLON' %}
+        <a href="{% url 'web:achat_envoyer' achat.pk %}"
+           class="btn w-100 fw-bold mb-2"
+           style="background:#BA7517;color:#fff;border-radius:10px"
+           onclick="return confirm('Marquer cette commande comme envoyée au fournisseur ?')">
+          <i class="bi bi-send me-2"></i>Envoyer au fournisseur
+        </a>
+        {% endif %}
+
+        {% if achat.statut == 'ENVOYEE' %}
+        <!-- Formulaire réception avec choix localisation -->
+        <form method="post" action="{% url 'web:achat_recevoir' achat.pk %}"
+              onsubmit="return confirm('Confirmer la réception ? Le stock sera mis à jour automatiquement.')">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size:13px">
+              <i class="bi bi-geo-alt me-1"></i>Réceptionner à
+            </label>
+            <select name="localisation_id" class="form-select" required>
+              <option value="">— Sélectionner le site —</option>
+              {% for l in localisations %}
+              <option value="{{ l.pk }}" {% if loc and loc.pk == l.pk %}selected{% endif %}>
+                {{ l.nom }} ({{ l.get_type_display }})
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn w-100 fw-bold py-3"
+                  style="background:#1e8449;color:#fff;border-radius:10px">
+            <i class="bi bi-box-arrow-in-down me-2"></i>
+            RÉCEPTIONNER EN STOCK
+          </button>
+          <div class="mt-2 text-muted text-center" style="font-size:11px">
+            Stock mis à jour + Journal ACHAT enregistré
+          </div>
+        </form>
+        {% endif %}
+
+        {% if achat.statut == 'RECUE' %}
+        <div class="alert alert-success py-2 mb-0" style="border-radius:10px;font-size:13px">
+          <i class="bi bi-check-circle me-2"></i>
+          Marchandise reçue le {{ achat.date_reception_reelle|date:"d M Y" }}.
+          Stock mis à jour ✓
+        </div>
+        {% endif %}
+
+        {% if achat.statut == 'ANNULEE' %}
+        <div class="alert alert-danger py-2 mb-0" style="border-radius:10px;font-size:13px">
+          <i class="bi bi-x-circle me-2"></i>Commande annulée.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Totaux -->
+    <div class="card border-0 shadow-sm" style="border-radius:14px;background:#1a3a5c;color:#fff">
+      <div class="card-body p-4">
+        <h6 class="fw-bold mb-3" style="opacity:.8">Montants</h6>
+        <div class="d-flex justify-content-between mb-2">
+          <span style="font-size:13px;opacity:.7">Total {{ achat.devise }}</span>
+          <span class="fw-bold">{{ achat.total_devise|floatformat:2 }} {{ achat.devise }}</span>
+        </div>
+        <div class="d-flex justify-content-between mb-2">
+          <span style="font-size:13px;opacity:.7">Taux change</span>
+          <span class="fw-bold">{{ achat.taux_change }}</span>
+        </div>
+        <hr style="border-color:rgba(255,255,255,.2)">
+        <div class="d-flex justify-content-between">
+          <span style="font-size:14px;font-weight:600">Total GNF</span>
+          <span style="font-size:1.4rem;font-weight:700">{{ achat.total_gnf|floatformat:0 }} GNF</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

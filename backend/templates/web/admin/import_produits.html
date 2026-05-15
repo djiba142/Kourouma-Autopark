@@ -1,0 +1,114 @@
+{% extends 'web/base.html' %}
+{% block title %}Import Produits{% endblock %}
+{% block page_title %}📥 Import Produits en Masse{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+  <!-- Formulaire upload -->
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm" style="border-radius:16px">
+      <div class="card-body p-4">
+        <h5 class="fw-bold mb-4">
+          <i class="bi bi-upload me-2" style="color:#1a3a5c"></i>Importer un fichier
+        </h5>
+
+        <form method="post" action="{% url 'web:import_produits' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Fichier CSV ou Excel *</label>
+            <div class="border-2 border-dashed rounded-3 p-4 text-center"
+                 style="border-color:#dee2e6;cursor:pointer;transition:border-color .15s"
+                 id="drop-zone"
+                 ondragover="event.preventDefault();this.style.borderColor='#1a3a5c'"
+                 ondragleave="this.style.borderColor='#dee2e6'"
+                 ondrop="handleDrop(event)">
+              <i class="bi bi-file-earmark-spreadsheet" style="font-size:2.5rem;color:#6c757d"></i>
+              <div class="mt-2 fw-semibold" style="color:#1a3a5c">
+                Glissez votre fichier ici
+              </div>
+              <div class="text-muted" style="font-size:12px">ou</div>
+              <label class="btn btn-outline-primary btn-sm mt-2" style="border-radius:8px;cursor:pointer">
+                <i class="bi bi-folder2-open me-1"></i>Parcourir
+                <input type="file" name="fichier" id="fichier-input" accept=".csv,.xlsx,.xls"
+                       style="display:none" onchange="updateLabel(this)">
+              </label>
+              <div id="fichier-nom" class="text-muted mt-2" style="font-size:12px">
+                .csv ou .xlsx — max 5 Mo
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn w-100 fw-bold py-3"
+                  style="background:#1a3a5c;color:#fff;border-radius:12px">
+            <i class="bi bi-cloud-upload me-2"></i>Lancer l'import
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instructions + colonnes -->
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm mb-3" style="border-radius:16px">
+      <div class="card-body p-4">
+        <h6 class="fw-bold mb-3">
+          <i class="bi bi-info-circle me-2 text-muted"></i>Format attendu
+        </h6>
+        <div class="table-responsive">
+          <table class="table table-sm mb-0" style="font-size:12px">
+            <thead class="table-dark">
+              <tr><th>Colonne</th><th>Obligatoire</th><th>Exemple</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="fw-bold">nom</td><td><span class="badge bg-danger">Oui</span></td><td>Filtre à huile X200</td></tr>
+              <tr><td class="fw-bold">reference</td><td><span class="badge bg-danger">Oui</span></td><td>FH-X200-12</td></tr>
+              <tr><td class="fw-bold">prix_vente</td><td><span class="badge bg-danger">Oui</span></td><td>45000</td></tr>
+              <tr><td>prix_achat</td><td><span class="badge bg-secondary">Non</span></td><td>32000</td></tr>
+              <tr><td>seuil_alerte</td><td><span class="badge bg-secondary">Non</span></td><td>5</td></tr>
+              <tr><td>categorie</td><td><span class="badge bg-secondary">Non</span></td><td>Filtration</td></tr>
+              <tr><td>description</td><td><span class="badge bg-secondary">Non</span></td><td>Filtre compatible...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Télécharger le modèle CSV -->
+    <div class="card border-0 shadow-sm" style="border-radius:16px;background:#EAF3DE">
+      <div class="card-body p-4">
+        <h6 class="fw-bold mb-2" style="color:#27500A">
+          <i class="bi bi-download me-2"></i>Modèle à télécharger
+        </h6>
+        <p class="text-muted mb-3" style="font-size:12px">
+          Remplissez ce modèle CSV et importez-le directement.
+        </p>
+        <a href="{% url 'web:import_modele_csv' %}"
+           class="btn btn-sm fw-bold" style="background:#1e8449;color:#fff;border-radius:8px">
+          <i class="bi bi-file-earmark-csv me-1"></i>Télécharger modele_produits.csv
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateLabel(input) {
+  const el = document.getElementById('fichier-nom');
+  el.textContent = input.files[0] ? input.files[0].name : '.csv ou .xlsx — max 5 Mo';
+  el.style.color = input.files[0] ? '#1a3a5c' : '#6c757d';
+  el.style.fontWeight = input.files[0] ? '600' : 'normal';
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').style.borderColor = '#dee2e6';
+  const input = document.getElementById('fichier-input');
+  input.files = e.dataTransfer.files;
+  updateLabel(input);
+}
+</script>
+{% endblock %}

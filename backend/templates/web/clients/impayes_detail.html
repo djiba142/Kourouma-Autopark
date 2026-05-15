@@ -1,0 +1,123 @@
+{% extends 'web/base.html' %}
+{% load humanize %}
+{% block title %}Impayés {{ client.nom }}{% endblock %}
+{% block page_title %}Commandes Impayées — {{ client.nom }}{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+
+  <!-- Info client -->
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm mb-3" style="border-radius:16px">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div style="width:48px;height:48px;border-radius:50%;background:#c0392b;
+                      display:flex;align-items:center;justify-content:center;
+                      color:#fff;font-size:18px;font-weight:700">
+            {{ client.nom|slice:":2"|upper }}
+          </div>
+          <div>
+            <div class="fw-bold fs-5">{{ client.nom }}</div>
+            <div class="text-muted" style="font-size:12px">{{ client.telephone }}</div>
+          </div>
+        </div>
+
+        <div class="p-3 mb-3" style="background:#FEF2F2;border-radius:10px;border:1px solid #FECACA">
+          <div class="text-muted" style="font-size:11px;font-weight:600">DETTE TOTALE</div>
+          <div class="fw-bold" style="font-size:1.5rem;color:#c0392b">
+            {{ dette_totale|floatformat:0 }} GNF
+          </div>
+        </div>
+
+        <div class="d-grid gap-2">
+          <a href="{% url 'web:client_whatsapp' client.pk %}"
+             class="btn btn-success fw-bold" style="border-radius:10px"
+             target="_blank" rel="noopener">
+            <i class="bi bi-whatsapp me-2"></i>Envoyer relance WhatsApp
+          </a>
+          <a href="{% url 'web:client_detail' client.pk %}"
+             class="btn btn-outline-primary" style="border-radius:10px">
+            <i class="bi bi-person me-2"></i>Voir fiche client
+          </a>
+          <a href="{% url 'web:rapport_dettes' %}"
+             class="btn btn-outline-secondary" style="border-radius:10px">
+            <i class="bi bi-arrow-left me-2"></i>Retour au rapport
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Détail commandes -->
+  <div class="col-md-8">
+    <div class="table-card">
+      <div class="table-card-header">
+        <h6><i class="bi bi-receipt me-2 text-danger"></i>
+          {{ lignes|length }} commande{{ lignes|length|pluralize }} impayée{{ lignes|length|pluralize }}
+        </h6>
+      </div>
+      <div class="table-responsive">
+        <table class="table mb-0 align-middle">
+          <thead>
+            <tr>
+              <th>N° Commande</th>
+              <th class="text-end">Total TTC</th>
+              <th class="text-end">Payé</th>
+              <th class="text-end text-danger">RESTE DÛ</th>
+              <th>Statut</th>
+              <th>Date</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for l in lignes %}
+            <tr>
+              <td class="fw-bold" style="font-family:monospace;font-size:13px">
+                {{ l.cmd.numero }}
+              </td>
+              <td class="text-end" style="font-size:13px">{{ l.cmd.total_ttc|floatformat:0 }} GNF</td>
+              <td class="text-end text-success fw-semibold" style="font-size:13px">
+                {{ l.paye|floatformat:0 }} GNF
+              </td>
+              <td class="text-end fw-bold text-danger fs-6">
+                {{ l.reste|floatformat:0 }} GNF
+              </td>
+              <td>
+                <span class="badge-statut statut-{{ l.cmd.statut }}">
+                  {{ l.cmd.get_statut_display }}
+                </span>
+              </td>
+              <td style="font-size:12px;color:#6c757d">
+                {{ l.cmd.date_creation|date:"d M Y" }}
+              </td>
+              <td>
+                <a href="{% url 'web:commande_detail' l.cmd.pk %}"
+                   class="btn btn-sm btn-outline-primary">
+                  <i class="bi bi-eye"></i>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center text-muted py-4">Aucune commande impayée</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          {% if lignes %}
+          <tfoot class="table-light">
+            <tr>
+              <td colspan="3" class="text-end fw-bold">TOTAL RESTE DÛ</td>
+              <td class="text-end fw-bold fs-5 text-danger">
+                {{ dette_totale|floatformat:0 }} GNF
+              </td>
+              <td colspan="3"></td>
+            </tr>
+          </tfoot>
+          {% endif %}
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

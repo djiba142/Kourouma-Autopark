@@ -1,0 +1,64 @@
+{% extends 'web/base.html' %}
+{% block title %}Créer utilisateur{% endblock %}
+{% block page_title %}Créer un nouvel utilisateur{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-6 mx-auto">
+    <div class="card" style="border-radius: 12px; border: 1px solid #e9ecef;">
+      <div class="card-body p-4">
+        
+        {% if messages %}
+        {% for msg in messages %}
+        <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <form method="post">
+          {% csrf_token %}
+          
+          <div class="mb-3">
+            <label for="nom" class="form-label fw-600" style="color: #1a3a5c;">Nom complet</label>
+            <input type="text" class="form-control" id="nom" name="nom" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="email" class="form-label fw-600" style="color: #1a3a5c;">Email</label>
+            <input type="email" class="form-control" id="email" name="email" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="telephone" class="form-label fw-600" style="color: #1a3a5c;">Téléphone (optionnel)</label>
+            <input type="text" class="form-control" id="telephone" name="telephone" placeholder="+224...">
+          </div>
+
+          <div class="mb-3">
+            <label for="role" class="form-label fw-600" style="color: #1a3a5c;">Rôle</label>
+            <select class="form-select" id="role" name="role">
+              {% for value, label in roles %}
+              <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label fw-600" style="color: #1a3a5c;">Mot de passe</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn fw-bold" style="background: #e8593c; color: #fff;">
+              Créer utilisateur
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

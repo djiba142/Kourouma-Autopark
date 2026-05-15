@@ -1,0 +1,120 @@
+{% extends 'web/base.html' %}
+{% block title %}Alertes Stock{% endblock %}
+{% block page_title %}⚠️ Alertes Stock{% endblock %}
+
+{% block content %}
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="kpi-card text-center" style="border-left:4px solid #c0392b">
+      <div class="kpi-label text-danger">Ruptures</div>
+      <div class="kpi-val text-danger">{{ ruptures|length }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="kpi-card text-center" style="border-left:4px solid #e67e22">
+      <div class="kpi-label" style="color:#e67e22">Stock faible</div>
+      <div class="kpi-val" style="color:#e67e22">{{ alertes|length }}</div>
+    </div>
+  </div>
+  <div class="col-auto ms-auto align-self-center">
+    <a href="{% url 'web:achat_nouveau' %}" class="btn fw-bold px-4"
+       style="background:#1a3a5c;color:#fff;border-radius:10px">
+      <i class="bi bi-basket-plus me-2"></i>Créer une commande achat
+    </a>
+  </div>
+</div>
+
+<!-- Ruptures -->
+{% if ruptures %}
+<div class="mb-4">
+  <h6 class="fw-bold text-danger mb-3">
+    <i class="bi bi-slash-circle me-2"></i>Ruptures totales — Stock = 0
+  </h6>
+  <div class="table-card" style="border-left:4px solid #c0392b">
+    <div class="table-responsive">
+      <table class="table mb-0 align-middle">
+        <thead>
+          <tr><th>Produit</th><th>Référence</th><th>Site</th><th>Stock</th><th>Seuil</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          {% for s in ruptures %}
+          <tr class="table-danger">
+            <td class="fw-bold">{{ s.produit.nom }}</td>
+            <td style="font-family:monospace;font-size:12px">{{ s.produit.reference }}</td>
+            <td>
+              <span class="badge bg-secondary bg-opacity-15 text-secondary" style="font-size:11px">
+                {{ s.localisation.nom }}
+              </span>
+            </td>
+            <td class="fw-bold text-danger fs-5">0</td>
+            <td class="text-muted">{{ s.produit.seuil_alerte }}</td>
+            <td>
+              <a href="{% url 'web:achat_nouveau' %}"
+                 class="btn btn-sm btn-danger fw-bold" style="border-radius:8px">
+                <i class="bi bi-basket me-1"></i>Commander
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Stock faible -->
+{% if alertes %}
+<div>
+  <h6 class="fw-bold mb-3" style="color:#e67e22">
+    <i class="bi bi-exclamation-triangle me-2"></i>Stock sous le seuil d'alerte
+  </h6>
+  <div class="table-card" style="border-left:4px solid #e67e22">
+    <div class="table-responsive">
+      <table class="table mb-0 align-middle">
+        <thead>
+          <tr><th>Produit</th><th>Référence</th><th>Site</th><th>Stock actuel</th><th>Seuil</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          {% for s in alertes %}
+          <tr class="table-warning">
+            <td class="fw-bold">{{ s.produit.nom }}</td>
+            <td style="font-family:monospace;font-size:12px">{{ s.produit.reference }}</td>
+            <td>
+              <span class="badge bg-secondary bg-opacity-15 text-secondary" style="font-size:11px">
+                {{ s.localisation.nom }}
+              </span>
+            </td>
+            <td class="fw-bold" style="color:#e67e22;font-size:1.1rem">{{ s.quantite }}</td>
+            <td class="text-muted">{{ s.produit.seuil_alerte }}</td>
+            <td>
+              <div class="d-flex gap-1">
+                <a href="{% url 'web:stock_entree' %}"
+                   class="btn btn-sm btn-outline-warning fw-bold" style="border-radius:8px">
+                  <i class="bi bi-plus-square me-1"></i>Entrée
+                </a>
+                <a href="{% url 'web:achat_nouveau' %}"
+                   class="btn btn-sm btn-outline-secondary" style="border-radius:8px">
+                  <i class="bi bi-basket"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if not ruptures and not alertes %}
+<div class="text-center py-5">
+  <i class="bi bi-check-circle" style="font-size:3.5rem;color:#1e8449;opacity:.5"></i>
+  <h5 class="mt-3 text-success fw-bold">Tous les stocks sont OK ✓</h5>
+  <p class="text-muted">Aucune rupture ni alerte en ce moment.</p>
+</div>
+{% endif %}
+
+{% endblock %}

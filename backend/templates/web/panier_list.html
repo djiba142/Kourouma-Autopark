@@ -1,0 +1,29 @@
+<!-- Template partiel: Affichage du panier -->
+{% for ligne in commande.lignes.all %}
+    <div class="panier-item" id="ligne-{{ ligne.id }}">
+        <div class="panier-item-info">
+            <h3>{{ ligne.produit.nom }}</h3>
+            <p>{{ ligne.quantite }} x {{ ligne.prix_unitaire|floatformat:2 }} GNF</p>
+        </div>
+        <div class="panier-item-total">
+            <div class="amount">{{ ligne.sous_total|floatformat:2 }} GNF</div>
+            <button class="btn btn-danger btn-small" 
+                hx-delete="/api/commandes/panier/{{ ligne.id }}/"
+                hx-target="#panier"
+                hx-confirm="Confirmer suppression ?">
+                Retirer
+            </button>
+        </div>
+    </div>
+{% empty %}
+    <div class="empty-state">
+        <p>Aucun article dans le panier</p>
+    </div>
+{% endfor %}
+
+<!-- Mise à jour des totaux -->
+<script>
+    document.getElementById('total_ht').textContent = '{{ commande.total_ht|floatformat:2 }} GNF';
+    document.getElementById('remise').textContent = '{{ commande.remise|floatformat:2 }} GNF';
+    document.getElementById('total_ttc').textContent = '{{ commande.total_ttc|floatformat:2 }} GNF';
+</script>
