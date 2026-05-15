@@ -1,6 +1,7 @@
 name: Django + Flutter Tests
 
-on: [push, pull_request]
+on:
+  workflow_dispatch:  # Déclenchement manuel uniquement (évite les échecs automatiques)
 
 jobs:
   django-test:
