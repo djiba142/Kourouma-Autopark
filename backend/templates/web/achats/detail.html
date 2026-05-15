@@ -28,7 +28,8 @@
             <div class="fw-bold mt-1">{{ achat.date_commande|date:"d M Y" }}</div>
           </div>
           <div class="col-6 col-md-3">
-            <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase">Réception prévue</div>
+            <div class="text-muted" style="font-size:11px;font-weight:600;text-transform:uppercase">Réception prévue
+            </div>
             <div class="fw-bold mt-1">
               {{ achat.date_reception_prevue|date:"d M Y"|default:"—" }}
             </div>
@@ -121,21 +122,55 @@
         <h6 class="fw-bold mb-3">Statut de la commande</h6>
 
         <!-- Timeline statut -->
+        <style>
+          .tl-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center
+          }
+
+          .tl-dot-active {
+            background: #1a3a5c
+          }
+
+          .tl-dot-done {
+            background: #1e8449
+          }
+
+          .tl-dot-off {
+            background: #e9ecef
+          }
+
+          .tl-lbl {
+            font-size: 13px
+          }
+
+          .tl-lbl-active {
+            font-weight: 700;
+            color: #1a3a5c
+          }
+
+          .tl-lbl-off {
+            font-weight: 400;
+            color: #6c757d
+          }
+        </style>
         <div class="d-flex flex-column gap-2 mb-4">
           {% for val, lbl in achat.STATUTS %}
           <div class="d-flex align-items-center gap-2">
-            <div style="width:24px;height:24px;border-radius:50%;flex-shrink:0;
-                        --bg-color:{% if achat.statut == val %}#1a3a5c{% elif achat.statut == 'ANNULEE' %}#e9ecef{% elif val == 'BROUILLON' %}#1e8449{% elif val == 'ENVOYEE' and achat.statut != 'BROUILLON' %}#1e8449{% elif val == 'RECUE' and achat.statut == 'RECUE' %}#1e8449{% else %}#e9ecef{% endif %};
-                        background:var(--bg-color);
-                        display:flex;align-items:center;justify-content:center">
+            <div
+              class="tl-dot {% if achat.statut == val %}tl-dot-active{% elif achat.statut == 'ANNULEE' %}tl-dot-off{% elif val == 'BROUILLON' %}tl-dot-done{% elif val == 'ENVOYEE' and achat.statut != 'BROUILLON' %}tl-dot-done{% elif val == 'RECUE' and achat.statut == 'RECUE' %}tl-dot-done{% else %}tl-dot-off{% endif %}">
               {% if achat.statut == val %}
               <i class="bi bi-circle-fill text-white" style="font-size:8px"></i>
               {% else %}
               <i class="bi bi-check text-white" style="font-size:10px"></i>
               {% endif %}
             </div>
-            <span style="font-size:13px; --f-weight:{% if achat.statut == val %}700{% else %}400{% endif %}; font-weight:var(--f-weight);
-                         --f-color:{% if achat.statut == val %}#1a3a5c{% else %}#6c757d{% endif %}; color:var(--f-color)">
+            <span class="tl-lbl {% if achat.statut == val %}tl-lbl-active{% else %}tl-lbl-off{% endif %}">
               {{ lbl }}
             </span>
           </div>
@@ -144,10 +179,9 @@
 
         <!-- Boutons workflow -->
         {% if achat.statut == 'BROUILLON' %}
-        <a href="{% url 'web:achat_envoyer' achat.pk %}"
-           class="btn w-100 fw-bold mb-2"
-           style="background:#BA7517;color:#fff;border-radius:10px"
-           onclick="return confirm('Marquer cette commande comme envoyée au fournisseur ?')">
+        <a href="{% url 'web:achat_envoyer' achat.pk %}" class="btn w-100 fw-bold mb-2"
+          style="background:#BA7517;color:#fff;border-radius:10px"
+          onclick="return confirm('Marquer cette commande comme envoyée au fournisseur ?')">
           <i class="bi bi-send me-2"></i>Envoyer au fournisseur
         </a>
         {% endif %}
@@ -155,7 +189,7 @@
         {% if achat.statut == 'ENVOYEE' %}
         <!-- Formulaire réception avec choix localisation -->
         <form method="post" action="{% url 'web:achat_recevoir' achat.pk %}"
-              onsubmit="return confirm('Confirmer la réception ? Le stock sera mis à jour automatiquement.')">
+          onsubmit="return confirm('Confirmer la réception ? Le stock sera mis à jour automatiquement.')">
           {% csrf_token %}
           <div class="mb-3">
             <label class="form-label fw-semibold" style="font-size:13px">
@@ -164,14 +198,13 @@
             <select name="localisation_id" class="form-select" required>
               <option value="">— Sélectionner le site —</option>
               {% for l in localisations %}
-              <option value="{{ l.pk }}" {% if loc and loc.pk == l.pk %}selected{% endif %}>
+              <option value="{{ l.pk }}" {% if loc and loc.pk==l.pk %}selected{% endif %}>
                 {{ l.nom }} ({{ l.get_type_display }})
               </option>
               {% endfor %}
             </select>
           </div>
-          <button type="submit" class="btn w-100 fw-bold py-3"
-                  style="background:#1e8449;color:#fff;border-radius:10px">
+          <button type="submit" class="btn w-100 fw-bold py-3" style="background:#1e8449;color:#fff;border-radius:10px">
             <i class="bi bi-box-arrow-in-down me-2"></i>
             RÉCEPTIONNER EN STOCK
           </button>
