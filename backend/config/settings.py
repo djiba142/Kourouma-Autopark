@@ -90,10 +90,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # ── Base de données ────────────────────────────────────────────────────────────
-# ── Base de données (MySQL par défaut) ────────────────────────────────────────
+# PostgreSQL en production (Render), SQLite en développement local
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL', 'mysql://root:@127.0.0.1:3306/db_bsg'),
+        default=os.environ.get('DATABASE_URL', f'sqlite:///{BASE_DIR / "db.sqlite3"}'),
         conn_max_age=600,
         conn_health_checks=True,
     )
